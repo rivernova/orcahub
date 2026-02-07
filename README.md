@@ -85,7 +85,7 @@ The LLM is not embedded inside the app — instead, the backend connects to it, 
 ---
 
 ## 🐳 Combined Docker Image
-OrcaHub is distributed as a **single Docker image** that contains both the Go backend API and the compiled React frontend. This makes deployment simple: one container, one port, one 
+OrcaHub is distributed as a **single Docker image** that contains both the Go backend API and the compiled React frontend. This makes deployment simple: one container, one port, one service.
 
 ## 📄 License
 
