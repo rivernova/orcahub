@@ -1,5 +1,5 @@
 # 🐋 OrcaHub  
-### Unifie Dashboard for Docker & Kubernetes
+### Unified Dashboard for Docker & Kubernetes
 
 OrcaHub is an open‑source, AI‑assisted control center for managing containers and clusters.  
 It unifies **Docker**, **Kubernetes**, and **local or remote LLMs** (like Ollama) into one intelligent dashboard.
