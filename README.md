@@ -19,18 +19,38 @@ AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHu
 ```txt
 orcahub/
 │
-├── backend/        # Go backend (API, Docker/K8s integrations, AI adapters, embedded web)
+├── backend/                                # Go backend (API, Docker/K8s integrations, AI adapters, embedded web)
+│   │
 │   ├── cmd/
+│   │   └── server/
+│   │       └── main.go
+│   │
 │   ├── internal/
-│   └── go.mod
+│   │   ├── api/                             # HTTP
+│   │   │
+│   │   ├── domain/                          # Core models + services
+│   │   │   └── services/
+│   │   │
+│   │   ├── persistence/                     # External system adapters
+│   │   │   ├── docker/
+│   │   │   ├── k8s/
+│   │   │   └── ai/
+│   │   │
+│   │   ├── config/
+│   │       └── config.go
+│   │
+│   ├── go.mod
+│   └── go.sum
 │
-├── frontend/       # React frontend (dashboard UI)
+├── frontend/                                # React frontend (dashboard UI)
 │   ├── src/
 │   ├── public/
-│   └── package.json
-```
+│   ├── package.json
+│   └── vite.config.*                         # or similar bundler config
+│
+└── README.md                                 # Monorepo documentation
 
-In production, the backend can embed the frontend build, allowing OrcaHub to ship as a single Docker image or single binary.
+```
 ---
 # 🌟 Features
 
