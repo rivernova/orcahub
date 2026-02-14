@@ -1,95 +1,108 @@
 # 🐋 OrcaHub  
 ### Unified Dashboard for Docker & Kubernetes
 
-OrcaHub is an open‑source, AI‑assisted control center for managing containers and clusters.  
-It unifies **Docker**, **Kubernetes**, and **local or remote LLMs** (like Ollama) into one intelligent dashboard.
+OrcaHub is an open‑source control center that unifies **Docker** and **Kubernetes** into a single, modern dashboard.  
+It provides a clean interface for inspecting, managing, and understanding your containers, clusters, logs, and resources — all in one place.
 
-This repository serves as the **main entry point** for the OrcaHub ecosystem.  
-It provides documentation, architecture, roadmap, and links to the backend and frontend services.
+This repository is a **monorepo** containing the full OrcaHub application:
+
+- A **Go backend** (API, integrations, orchestration, optional AI adapters)
+- A **React frontend** (dashboard UI)
+- Tooling to build a **single Docker image** that serves both
+
+AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHub and are accessed via HTTP.
 
 ---
 
-## 🧩 OrcaHub Architecture
-
-OrcaHub is composed of three modular components:
+## 🧩 Monorepo Structure
 
 ```txt
-+------------------+
-|    OrcaHub App   |
-+------------------+
-|
-|---> orcahub-frontend (React UI)
-|
-|---> orcahub-backend (Go API)
-|
-|---> Ollama / OpenAI / Anthropic (LLM provider)
-
+orcahub/
+│
+├── backend/        # Go backend (API, Docker/K8s integrations, AI adapters, embedded web)
+│   ├── cmd/
+│   ├── internal/
+│   └── go.mod
+│
+├── frontend/       # React frontend (dashboard UI)
+│   ├── src/
+│   ├── public/
+│   └── package.json
 ```
 
-### **orcahub-backend**
-- Written in Go  
-- Integrates with Docker Engine API  
-- Integrates with Kubernetes via `client-go`  
-- Provides REST + WebSocket API  
-- Hosts the AI adapter layer (Ollama, OpenAI, etc.)  
-- Optionally serves the frontend in production builds  
-
-Repo: https://github.com/rivernova/orcahub-backend
-
+In production, the backend can embed the frontend build, allowing OrcaHub to ship as a single Docker image or single binary.
 ---
+# 🌟 Features
 
-### **LLM Provider (Ollama by default)**
+## 🐳 Docker Management
 
-OrcaHub integrates with local or remote LLMs through the backend’s AI adapter layer.
+- List containers, images, volumes, networks
+- Start, stop, restart containers
+-  Inspect details and view logs
 
-Supported providers:
-- **Ollama** (local, recommended)
-- **OpenAI**
-- **Anthropic**
-- Custom endpoints
+## ☸️ Kubernetes Management
 
-The LLM is not embedded inside the app — instead, the backend connects to it, giving users flexibility and keeping binaries lightweight.
+- Connect via local kubeconfig or in‑cluster config
+- Explore namespaces, pods, deployments, services, nodes
+- View logs, events, and resource details
 
+## 📊 Unified Dashboard
+
+- Real‑time views of Docker and Kubernetes resources
+- Log and YAML views
+- Clean, modern UI designed for clarity and speed
+
+### 🧠 Optional AI‑Assisted Workflows
+
+(Enabled when an external LLM provider is configured)
+
+- Explain pod/container failures
+- Summarize logs and events
+- Generate Kubernetes YAML
+- Generate Docker/kubectl commands
+- Suggest fixes and optimizations
+
+# 🧱 Backend Architecture (Go)
+
+The backend follows a clean, layered architecture for clarity and maintainability:
+
+```txt
+backend/internal/
+│
+├── api/             # HTTP handlers, routing
+├── domain/          # Core models + business logic
+├── persistence/     # Docker, Kubernetes, AI providers
+├── config/          # Environment/config loading
+└── web/             # Embedded frontend build (dist/)
+```
+
+## Responsibilities
+
+- Expose a REST API consumed by the frontend
+- Integrate with Docker Engine API
+- Integrate with Kubernetes via client-go
+- Optionally integrate with LLM providers (Ollama, OpenAI, Anthropic, custom)
+- Serve the compiled frontend for unified releases
+- The backend abstracts all external systems (Docker, K8s, AI) behind clear interfaces in the persistence layer.
+
+# 🎨 Frontend Architecture (React)
+
+The frontend is a modern React application Vite‑based that:
+
+- Calls the backend’s /api/... endpoints
+- Renders Docker and Kubernetes views
+- Provides log/YAML views
+- Is compiled into static assets and embedded into the Go backend for production
 ---
+# 🤝 Contributing
 
-## 🌟 Features
+Contributions are welcome — code, documentation, ideas, testing.
+1. Fork the repo
+2. Create a feature branch
+3.  Open a pull request
 
-### 🧠 AI‑Powered Assistance
-- Explain pod failures and container crashes  
-- Summarize logs and events  
-- Generate Kubernetes YAML  
-- Generate Docker/kubectl commands  
-- Suggest fixes and optimizations  
-- Natural‑language interface for complex operations  
-
-### 🐳 Docker Management
-- View containers, images, volumes, networks  
-- Start, stop, restart containers  
-- Inspect details and view logs  
-- Resource usage and live stats  
-
-### ☸️ Kubernetes Management
-- Connect using your local `kubeconfig`  
-- Explore namespaces, pods, deployments, services, nodes  
-- View logs, events, and resource metrics  
-- Port‑forwarding and exec into pods  
-- Apply YAML manifests directly from the UI  
-
-### 📊 Unified Dashboard
-- Real‑time metrics  
-- Log streaming  
-- YAML editor  
-- Terminal panel  
-- Multi‑cluster support (planned)  
-
+A CONTRIBUTING.md guide will be added as the project matures.
 ---
-
-## 🐳 Combined Docker Image
-OrcaHub is distributed as a **single Docker image** that contains both the Go backend API and the compiled React frontend. This makes deployment simple: one container, one port, one service.
-
-## 📄 License
+# 📄 License
 
 MIT License — free to use, modify, and distribute.
-
-
-
