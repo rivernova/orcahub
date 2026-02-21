@@ -31,10 +31,9 @@ orcahub/
 │   │   ├── domain/                          # Core models + services
 │   │   │   └── services/
 │   │   │
-│   │   ├── persistence/                     # External system adapters
+│   │   ├── adapters/                     # External system adapters
 │   │   │   ├── docker/
 │   │   │   ├── k8s/
-│   │   │   └── ai/
 │   │   │
 │   │   ├── config/
 │   │       └── config.go
