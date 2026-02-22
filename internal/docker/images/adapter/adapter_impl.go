@@ -14,7 +14,7 @@ import (
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
-	"github.com/rivernova/orcahub/internal/docker/images/domain"
+	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
 type ImageAdapterImpl struct {
@@ -31,15 +31,15 @@ func NewImageAdapterImpl() (*ImageAdapterImpl, error) {
 
 var _ ImageAdapter = (*ImageAdapterImpl)(nil)
 
-func (a *ImageAdapterImpl) List(ctx context.Context) ([]domain.Image, error) {
+func (a *ImageAdapterImpl) List(ctx context.Context) ([]model.Image, error) {
 	images, err := a.client.ImageList(ctx, image.ListOptions{All: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list images: %w", err)
 	}
 
-	result := make([]domain.Image, 0, len(images))
+	result := make([]model.Image, 0, len(images))
 	for _, img := range images {
-		result = append(result, domain.Image{
+		result = append(result, model.Image{
 			ID:         img.ID,
 			Tags:       img.RepoTags,
 			Size:       img.Size,
@@ -51,7 +51,7 @@ func (a *ImageAdapterImpl) List(ctx context.Context) ([]domain.Image, error) {
 	return result, nil
 }
 
-func (a *ImageAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Image, error) {
+func (a *ImageAdapterImpl) Inspect(ctx context.Context, id string) (*model.Image, error) {
 	img, _, err := a.client.ImageInspectWithRaw(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect image %s: %w", id, err)
@@ -64,7 +64,7 @@ func (a *ImageAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Imag
 
 	created, _ := time.Parse(time.RFC3339Nano, img.Created)
 
-	return &domain.Image{
+	return &model.Image{
 		ID:           img.ID,
 		Tags:         img.RepoTags,
 		Size:         img.Size,
@@ -84,7 +84,7 @@ func (a *ImageAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Imag
 	}, nil
 }
 
-func (a *ImageAdapterImpl) Delete(ctx context.Context, id string, opts domain.RemoveOptions) (*domain.RemoveResult, error) {
+func (a *ImageAdapterImpl) Delete(ctx context.Context, id string, opts model.RemoveOptions) (*model.RemoveResult, error) {
 	items, err := a.client.ImageRemove(ctx, id, image.RemoveOptions{
 		Force:         opts.Force,
 		PruneChildren: opts.PruneChildren,
@@ -93,7 +93,7 @@ func (a *ImageAdapterImpl) Delete(ctx context.Context, id string, opts domain.Re
 		return nil, fmt.Errorf("failed to delete image %s: %w", id, err)
 	}
 
-	result := &domain.RemoveResult{}
+	result := &model.RemoveResult{}
 	for _, item := range items {
 		if item.Deleted != "" {
 			result.Deleted = append(result.Deleted, item.Deleted)
@@ -105,7 +105,7 @@ func (a *ImageAdapterImpl) Delete(ctx context.Context, id string, opts domain.Re
 	return result, nil
 }
 
-func (a *ImageAdapterImpl) Pull(ctx context.Context, opts domain.PullOptions) error {
+func (a *ImageAdapterImpl) Pull(ctx context.Context, opts model.PullOptions) error {
 	pullOpts := image.PullOptions{}
 
 	if opts.Auth != nil {
@@ -131,7 +131,7 @@ func (a *ImageAdapterImpl) Pull(ctx context.Context, opts domain.PullOptions) er
 	return err
 }
 
-func (a *ImageAdapterImpl) Build(ctx context.Context, opts domain.BuildOptions) (*domain.BuildResult, error) {
+func (a *ImageAdapterImpl) Build(ctx context.Context, opts model.BuildOptions) (*model.BuildResult, error) {
 	dockerfile := opts.Dockerfile
 	if dockerfile == "" {
 		dockerfile = "Dockerfile"
@@ -189,7 +189,7 @@ func (a *ImageAdapterImpl) Build(ctx context.Context, opts domain.BuildOptions) 
 		}
 	}
 
-	return &domain.BuildResult{
+	return &model.BuildResult{
 		ImageID:  imageID,
 		Tags:     []string{opts.Tag},
 		Warnings: warnings,

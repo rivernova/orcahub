@@ -3,14 +3,15 @@ package domain
 import (
 	"context"
 
+	"github.com/rivernova/orcahub/internal/docker/volumes/adapter"
 	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
 )
 
 type VolumeServiceImpl struct {
-	adapter VolumeAdapter
+	adapter adapter.VolumeAdapter
 }
 
-func NewVolumeServiceImpl(adapter VolumeAdapter) *VolumeServiceImpl {
+func NewVolumeServiceImpl(adapter adapter.VolumeAdapter) *VolumeServiceImpl {
 	return &VolumeServiceImpl{adapter: adapter}
 }
 
