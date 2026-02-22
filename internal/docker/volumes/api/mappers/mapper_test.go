@@ -3,7 +3,7 @@ package mappers_test
 import (
 	"testing"
 
-	"github.com/rivernova/orcahub/internal/docker/volumes/api/mappers"
+	mappers "github.com/rivernova/orcahub/internal/docker/volumes/api/mappers"
 	"github.com/rivernova/orcahub/internal/docker/volumes/model"
 	"github.com/stretchr/testify/assert"
 )

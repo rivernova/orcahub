@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	mappers "github.com/rivernova/orcahub/internal/docker/volumes/api/mappers"
+	requests "github.com/rivernova/orcahub/internal/docker/volumes/api/requests"
 	domain "github.com/rivernova/orcahub/internal/docker/volumes/domain"
 	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
 )
@@ -22,7 +24,7 @@ func (h *Handler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toVolumeResponseList(volumes))
+	c.JSON(http.StatusOK, mappers.ToVolumeResponseList(volumes))
 }
 
 func (h *Handler) Inspect(c *gin.Context) {
@@ -32,11 +34,11 @@ func (h *Handler) Inspect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toVolumeInspectResponse(volume))
+	c.JSON(http.StatusOK, mappers.ToVolumeInspectResponse(volume))
 }
 
 func (h *Handler) Create(c *gin.Context) {
-	var req CreateVolumeRequest
+	var req requests.CreateVolumeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -51,7 +53,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, toVolumeResponse(*result))
+	c.JSON(http.StatusCreated, mappers.ToVolumeResponse(*result))
 }
 
 func (h *Handler) Delete(c *gin.Context) {

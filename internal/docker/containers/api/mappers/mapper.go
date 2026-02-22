@@ -6,15 +6,15 @@ import (
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
 
-func toContainerResponseList(cs []model.Container) []responses.ContainerResponse {
+func ToContainerResponseList(cs []model.Container) []responses.ContainerResponse {
 	result := make([]responses.ContainerResponse, 0, len(cs))
 	for _, c := range cs {
-		result = append(result, toContainerResponse(c))
+		result = append(result, ToContainerResponse(c))
 	}
 	return result
 }
 
-func toContainerResponse(c model.Container) responses.ContainerResponse {
+func ToContainerResponse(c model.Container) responses.ContainerResponse {
 	return responses.ContainerResponse{
 		ID:            c.ID,
 		Name:          c.Name,
@@ -23,15 +23,15 @@ func toContainerResponse(c model.Container) responses.ContainerResponse {
 		Status:        c.Status,
 		State:         c.State,
 		Created:       c.Created,
-		Ports:         toPortResponseList(c.Ports),
+		Ports:         ToPortResponseList(c.Ports),
 		Labels:        c.Labels,
-		Mounts:        toMountResponseList(c.Mounts),
+		Mounts:        ToMountResponseList(c.Mounts),
 		NetworkMode:   c.NetworkMode,
 		RestartPolicy: c.RestartPolicy,
 	}
 }
 
-func toContainerInspectResponse(c *model.Container) *responses.ContainerInspectResponse {
+func ToContainerInspectResponse(c *model.Container) *responses.ContainerInspectResponse {
 	networks := make(map[string]responses.NetworkEndpoint, len(c.Networks))
 	for k, v := range c.Networks {
 		networks[k] = responses.NetworkEndpoint{
@@ -42,7 +42,7 @@ func toContainerInspectResponse(c *model.Container) *responses.ContainerInspectR
 		}
 	}
 	return &responses.ContainerInspectResponse{
-		ContainerResponse: toContainerResponse(*c),
+		ContainerResponse: ToContainerResponse(*c),
 		Hostname:          c.Hostname,
 		Env:               c.Env,
 		Cmd:               c.Cmd,
@@ -56,7 +56,7 @@ func toContainerInspectResponse(c *model.Container) *responses.ContainerInspectR
 	}
 }
 
-func toDomainContainer(req requests.CreateContainerRequest) model.Container {
+func ToDomainContainer(req requests.CreateContainerRequest) model.Container {
 	ports := make([]model.Port, 0, len(req.Ports))
 	for _, p := range req.Ports {
 		ports = append(ports, model.Port{
@@ -73,7 +73,7 @@ func toDomainContainer(req requests.CreateContainerRequest) model.Container {
 	}
 }
 
-func toPortResponseList(ports []model.Port) []responses.PortResponse {
+func ToPortResponseList(ports []model.Port) []responses.PortResponse {
 	result := make([]responses.PortResponse, 0, len(ports))
 	for _, p := range ports {
 		result = append(result, responses.PortResponse{
@@ -86,7 +86,7 @@ func toPortResponseList(ports []model.Port) []responses.PortResponse {
 	return result
 }
 
-func toMountResponseList(mounts []model.Mount) []responses.MountResponse {
+func ToMountResponseList(mounts []model.Mount) []responses.MountResponse {
 	result := make([]responses.MountResponse, 0, len(mounts))
 	for _, m := range mounts {
 		result = append(result, responses.MountResponse{
@@ -100,7 +100,7 @@ func toMountResponseList(mounts []model.Mount) []responses.MountResponse {
 	return result
 }
 
-func toStatsResponse(s *model.ContainerStats) *responses.StatsResponse {
+func ToStatsResponse(s *model.ContainerStats) *responses.StatsResponse {
 	return &responses.StatsResponse{
 		CPUPercent:    s.CPUPercent,
 		MemoryUsage:   s.MemoryUsage,

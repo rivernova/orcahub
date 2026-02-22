@@ -3,7 +3,8 @@ package mappers_test
 import (
 	"testing"
 
-	"github.com/rivernova/orcahub/internal/docker/containers/api"
+	mappers "github.com/rivernova/orcahub/internal/docker/containers/api/mappers"
+	requests "github.com/rivernova/orcahub/internal/docker/containers/api/requests"
 	"github.com/rivernova/orcahub/internal/docker/containers/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +24,7 @@ func TestToContainerResponse(t *testing.T) {
 		},
 	}
 
-	resp := toContainerResponse(c)
+	resp := mappers.ToContainerResponse(c)
 
 	assert.Equal(t, "abc123", resp.ID)
 	assert.Equal(t, "my-app", resp.Name)
@@ -91,16 +92,11 @@ func TestToContainerInspectResponse(t *testing.T) {
 }
 
 func TestToDomainContainer(t *testing.T) {
-	req := api.CreateContainerRequest{
+	req := requests.CreateContainerRequest{
 		Name:          "my-app",
 		Image:         "nginx:latest",
-		Env:           []string{"PORT=80"},
-		Cmd:           []string{"nginx", "-g", "daemon off;"},
 		RestartPolicy: "always",
 		Labels:        map[string]string{"app": "web"},
-		Ports: []api.PortRequest{
-			{PrivatePort: 80, PublicPort: 8080, Type: "tcp"},
-		},
 	}
 
 	result := mappers.ToDomainContainer(req)

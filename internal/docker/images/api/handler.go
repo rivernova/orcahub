@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	mappers "github.com/rivernova/orcahub/internal/docker/images/api/mappers"
+	requests "github.com/rivernova/orcahub/internal/docker/images/api/requests"
+	responses "github.com/rivernova/orcahub/internal/docker/images/api/responses"
 	domain "github.com/rivernova/orcahub/internal/docker/images/domain"
 	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
@@ -22,7 +25,7 @@ func (h *Handler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toImageResponseList(images))
+	c.JSON(http.StatusOK, mappers.ToImageResponseList(images))
 }
 
 func (h *Handler) Inspect(c *gin.Context) {
@@ -32,12 +35,12 @@ func (h *Handler) Inspect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toImageInspectResponse(image))
+	c.JSON(http.StatusOK, mappers.ToImageInspectResponse(image))
 }
 
 func (h *Handler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	var query RemoveImageRequest
+	var query requests.RemoveImageRequest
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -50,11 +53,11 @@ func (h *Handler) Delete(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, RemoveImageResponse{Deleted: result.Deleted, Untagged: result.Untagged})
+	c.JSON(http.StatusOK, responses.RemoveImageResponse{Deleted: result.Deleted, Untagged: result.Untagged})
 }
 
 func (h *Handler) Pull(c *gin.Context) {
-	var req PullImageRequest
+	var req requests.PullImageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -75,7 +78,7 @@ func (h *Handler) Pull(c *gin.Context) {
 }
 
 func (h *Handler) Build(c *gin.Context) {
-	var req BuildImageRequest
+	var req requests.BuildImageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -92,7 +95,7 @@ func (h *Handler) Build(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, BuildImageResponse{
+	c.JSON(http.StatusCreated, responses.BuildImageResponse{
 		ImageID:  result.ImageID,
 		Tags:     result.Tags,
 		Warnings: result.Warnings,

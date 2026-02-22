@@ -3,7 +3,7 @@ package mappers_test
 import (
 	"testing"
 
-	"github.com/rivernova/orcahub/internal/docker/networks/api"
+	mappers "github.com/rivernova/orcahub/internal/docker/networks/api/mappers"
 	"github.com/rivernova/orcahub/internal/docker/networks/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +20,7 @@ func TestToNetworkResponse(t *testing.T) {
 		Created:    "2024-01-01 00:00:00 +0000 UTC",
 	}
 
-	resp := toNetworkResponse(n)
+	resp := mappers.ToNetworkResponse(*n)
 
 	assert.Equal(t, "net1", resp.ID)
 	assert.Equal(t, "my-network", resp.Name)
@@ -36,7 +36,7 @@ func TestToNetworkResponseList(t *testing.T) {
 		{ID: "net2", Name: "host"},
 	}
 
-	result := api.ToNetworkResponseList(networks)
+	result := mappers.ToNetworkResponseList(networks)
 
 	assert.Len(t, result, 2)
 	assert.Equal(t, "net1", result[0].ID)

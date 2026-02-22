@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	mappers "github.com/rivernova/orcahub/internal/docker/containers/api/mappers"
+	requests "github.com/rivernova/orcahub/internal/docker/containers/api/requests"
+	responses "github.com/rivernova/orcahub/internal/docker/containers/api/responses"
 	domain "github.com/rivernova/orcahub/internal/docker/containers/domain"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
@@ -33,21 +35,21 @@ func (h *Handler) Inspect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toContainerInspectResponse(container))
+	c.JSON(http.StatusOK, mappers.ToContainerInspectResponse(container))
 }
 
 func (h *Handler) Create(c *gin.Context) {
-	var req CreateContainerRequest
+	var req requests.CreateContainerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := h.service.Create(c.Request.Context(), toDomainContainer(req))
+	result, err := h.service.Create(c.Request.Context(), mappers.ToDomainContainer(req))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, CreateContainerResponse{ID: result.ID})
+	c.JSON(http.StatusCreated, responses.CreateContainerResponse{ID: result.ID})
 }
 
 func (h *Handler) Delete(c *gin.Context) {
@@ -70,7 +72,7 @@ func (h *Handler) Start(c *gin.Context) {
 
 func (h *Handler) Stop(c *gin.Context) {
 	id := c.Param("id")
-	var req StopContainerRequest
+	var req requests.StopContainerRequest
 	_ = c.ShouldBindJSON(&req)
 	if err := h.service.Stop(c.Request.Context(), id, req.Timeout); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -90,7 +92,7 @@ func (h *Handler) Restart(c *gin.Context) {
 
 func (h *Handler) Logs(c *gin.Context) {
 	id := c.Param("id")
-	var query LogsQueryRequest
+	var query requests.LogsQueryRequest
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -105,7 +107,7 @@ func (h *Handler) Logs(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, LogsResponse{Logs: logs})
+	c.JSON(http.StatusOK, responses.LogsResponse{Logs: logs})
 }
 
 func (h *Handler) Stats(c *gin.Context) {
@@ -115,12 +117,12 @@ func (h *Handler) Stats(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toStatsResponse(stats))
+	c.JSON(http.StatusOK, mappers.ToStatsResponse(stats))
 }
 
 func (h *Handler) Exec(c *gin.Context) {
 	id := c.Param("id")
-	var req ExecRequest
+	var req requests.ExecRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -134,5 +136,5 @@ func (h *Handler) Exec(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, ExecResponse{Output: result.Output, ExitCode: result.ExitCode})
+	c.JSON(http.StatusOK, responses.ExecResponse{Output: result.Output, ExitCode: result.ExitCode})
 }

@@ -5,15 +5,15 @@ import (
 	model "github.com/rivernova/orcahub/internal/docker/networks/model"
 )
 
-func toNetworkResponseList(ns []model.Network) []responses.NetworkResponse {
+func ToNetworkResponseList(ns []model.Network) []responses.NetworkResponse {
 	result := make([]responses.NetworkResponse, 0, len(ns))
 	for _, n := range ns {
-		result = append(result, toNetworkResponse(n))
+		result = append(result, ToNetworkResponse(n))
 	}
 	return result
 }
 
-func toNetworkResponse(n model.Network) responses.NetworkResponse {
+func ToNetworkResponse(n model.Network) responses.NetworkResponse {
 	return responses.NetworkResponse{
 		ID:         n.ID,
 		Name:       n.Name,
@@ -26,7 +26,7 @@ func toNetworkResponse(n model.Network) responses.NetworkResponse {
 	}
 }
 
-func toNetworkInspectResponse(n *model.Network) *responses.NetworkInspectResponse {
+func ToNetworkInspectResponse(n *model.Network) *responses.NetworkInspectResponse {
 	pools := make([]responses.IPAMPoolInfo, 0, len(n.IPAM.Config))
 	for _, p := range n.IPAM.Config {
 		pools = append(pools, responses.IPAMPoolInfo{Subnet: p.Subnet, Gateway: p.Gateway})
@@ -43,7 +43,7 @@ func toNetworkInspectResponse(n *model.Network) *responses.NetworkInspectRespons
 	}
 
 	return &responses.NetworkInspectResponse{
-		NetworkResponse: toNetworkResponse(*n),
+		NetworkResponse: ToNetworkResponse(*n),
 		IPAM: responses.IPAMResponse{
 			Driver: n.IPAM.Driver,
 			Config: pools,

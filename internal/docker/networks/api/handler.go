@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	mappers "github.com/rivernova/orcahub/internal/docker/networks/api/mappers"
+	requests "github.com/rivernova/orcahub/internal/docker/networks/api/requests"
 	domain "github.com/rivernova/orcahub/internal/docker/networks/domain"
 	model "github.com/rivernova/orcahub/internal/docker/networks/model"
 )
@@ -22,7 +24,7 @@ func (h *Handler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toNetworkResponseList(networks))
+	c.JSON(http.StatusOK, mappers.ToNetworkResponseList(networks))
 }
 
 func (h *Handler) Inspect(c *gin.Context) {
@@ -32,11 +34,11 @@ func (h *Handler) Inspect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toNetworkInspectResponse(network))
+	c.JSON(http.StatusOK, mappers.ToNetworkInspectResponse(network))
 }
 
 func (h *Handler) Create(c *gin.Context) {
-	var req CreateNetworkRequest
+	var req requests.CreateNetworkRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -61,7 +63,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, toNetworkResponse(*result))
+	c.JSON(http.StatusCreated, mappers.ToNetworkResponse(*result))
 }
 
 func (h *Handler) Delete(c *gin.Context) {
@@ -75,7 +77,7 @@ func (h *Handler) Delete(c *gin.Context) {
 
 func (h *Handler) Connect(c *gin.Context) {
 	id := c.Param("id")
-	var req ConnectContainerRequest
+	var req requests.ConnectContainerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -93,7 +95,7 @@ func (h *Handler) Connect(c *gin.Context) {
 
 func (h *Handler) Disconnect(c *gin.Context) {
 	id := c.Param("id")
-	var req DisconnectContainerRequest
+	var req requests.DisconnectContainerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

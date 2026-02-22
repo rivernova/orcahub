@@ -5,15 +5,15 @@ import (
 	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
 )
 
-func toVolumeResponseList(vs []model.Volume) []responses.VolumeResponse {
+func ToVolumeResponseList(vs []model.Volume) []responses.VolumeResponse {
 	result := make([]responses.VolumeResponse, 0, len(vs))
 	for _, v := range vs {
-		result = append(result, toVolumeResponse(v))
+		result = append(result, ToVolumeResponse(v))
 	}
 	return result
 }
 
-func toVolumeResponse(v model.Volume) responses.VolumeResponse {
+func ToVolumeResponse(v model.Volume) responses.VolumeResponse {
 	return responses.VolumeResponse{
 		Name:       v.Name,
 		Driver:     v.Driver,
@@ -24,9 +24,9 @@ func toVolumeResponse(v model.Volume) responses.VolumeResponse {
 	}
 }
 
-func toVolumeInspectResponse(v *model.Volume) *responses.VolumeInspectResponse {
+func ToVolumeInspectResponse(v *model.Volume) *responses.VolumeInspectResponse {
 	return &responses.VolumeInspectResponse{
-		VolumeResponse: toVolumeResponse(*v),
+		VolumeResponse: ToVolumeResponse(*v),
 		Options:        v.Options,
 		Status:         v.Status,
 	}

@@ -5,15 +5,15 @@ import (
 	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
-func toImageResponseList(imgs []model.Image) []responses.ImageResponse {
+func ToImageResponseList(imgs []model.Image) []responses.ImageResponse {
 	result := make([]responses.ImageResponse, 0, len(imgs))
 	for _, img := range imgs {
-		result = append(result, toImageResponse(img))
+		result = append(result, ToImageResponse(img))
 	}
 	return result
 }
 
-func toImageResponse(img model.Image) responses.ImageResponse {
+func ToImageResponse(img model.Image) responses.ImageResponse {
 	return responses.ImageResponse{
 		ID:         img.ID,
 		Tags:       img.Tags,
@@ -24,9 +24,9 @@ func toImageResponse(img model.Image) responses.ImageResponse {
 	}
 }
 
-func toImageInspectResponse(img *model.Image) *responses.ImageInspectResponse {
+func ToImageInspectResponse(img *model.Image) *responses.ImageInspectResponse {
 	return &responses.ImageInspectResponse{
-		ImageResponse: toImageResponse(*img),
+		ImageResponse: ToImageResponse(*img),
 		Os:            img.Os,
 		Architecture:  img.Architecture,
 		Author:        img.Author,
