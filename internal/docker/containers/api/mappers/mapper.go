@@ -1,19 +1,21 @@
-package api
+package mappers
 
 import (
+	requests "github.com/rivernova/orcahub/internal/docker/containers/api/requests"
+	responses "github.com/rivernova/orcahub/internal/docker/containers/api/responses"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
 
-func toContainerResponseList(cs []model.Container) []ContainerResponse {
-	result := make([]ContainerResponse, 0, len(cs))
+func toContainerResponseList(cs []model.Container) []responses.ContainerResponse {
+	result := make([]responses.ContainerResponse, 0, len(cs))
 	for _, c := range cs {
 		result = append(result, toContainerResponse(c))
 	}
 	return result
 }
 
-func toContainerResponse(c model.Container) ContainerResponse {
-	return ContainerResponse{
+func toContainerResponse(c model.Container) responses.ContainerResponse {
+	return responses.ContainerResponse{
 		ID:            c.ID,
 		Name:          c.Name,
 		Image:         c.Image,
@@ -29,17 +31,17 @@ func toContainerResponse(c model.Container) ContainerResponse {
 	}
 }
 
-func toContainerInspectResponse(c *model.Container) *ContainerInspectResponse {
-	networks := make(map[string]NetworkEndpoint, len(c.Networks))
+func toContainerInspectResponse(c *model.Container) *responses.ContainerInspectResponse {
+	networks := make(map[string]responses.NetworkEndpoint, len(c.Networks))
 	for k, v := range c.Networks {
-		networks[k] = NetworkEndpoint{
+		networks[k] = responses.NetworkEndpoint{
 			NetworkID:  v.NetworkID,
 			IPAddress:  v.IPAddress,
 			Gateway:    v.Gateway,
 			MacAddress: v.MacAddress,
 		}
 	}
-	return &ContainerInspectResponse{
+	return &responses.ContainerInspectResponse{
 		ContainerResponse: toContainerResponse(*c),
 		Hostname:          c.Hostname,
 		Env:               c.Env,
@@ -54,7 +56,7 @@ func toContainerInspectResponse(c *model.Container) *ContainerInspectResponse {
 	}
 }
 
-func toDomainContainer(req CreateContainerRequest) model.Container {
+func toDomainContainer(req requests.CreateContainerRequest) model.Container {
 	ports := make([]model.Port, 0, len(req.Ports))
 	for _, p := range req.Ports {
 		ports = append(ports, model.Port{
@@ -71,10 +73,10 @@ func toDomainContainer(req CreateContainerRequest) model.Container {
 	}
 }
 
-func toPortResponseList(ports []model.Port) []PortResponse {
-	result := make([]PortResponse, 0, len(ports))
+func toPortResponseList(ports []model.Port) []responses.PortResponse {
+	result := make([]responses.PortResponse, 0, len(ports))
 	for _, p := range ports {
-		result = append(result, PortResponse{
+		result = append(result, responses.PortResponse{
 			PrivatePort: p.PrivatePort,
 			PublicPort:  p.PublicPort,
 			Type:        p.Type,
@@ -84,10 +86,10 @@ func toPortResponseList(ports []model.Port) []PortResponse {
 	return result
 }
 
-func toMountResponseList(mounts []model.Mount) []MountResponse {
-	result := make([]MountResponse, 0, len(mounts))
+func toMountResponseList(mounts []model.Mount) []responses.MountResponse {
+	result := make([]responses.MountResponse, 0, len(mounts))
 	for _, m := range mounts {
-		result = append(result, MountResponse{
+		result = append(result, responses.MountResponse{
 			Type:        m.Type,
 			Source:      m.Source,
 			Destination: m.Destination,
@@ -98,8 +100,8 @@ func toMountResponseList(mounts []model.Mount) []MountResponse {
 	return result
 }
 
-func toStatsResponse(s *model.ContainerStats) *StatsResponse {
-	return &StatsResponse{
+func toStatsResponse(s *model.ContainerStats) *responses.StatsResponse {
+	return &responses.StatsResponse{
 		CPUPercent:    s.CPUPercent,
 		MemoryUsage:   s.MemoryUsage,
 		MemoryLimit:   s.MemoryLimit,

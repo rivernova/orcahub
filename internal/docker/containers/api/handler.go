@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	mappers "github.com/rivernova/orcahub/internal/docker/containers/api/mappers"
 	domain "github.com/rivernova/orcahub/internal/docker/containers/domain"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
@@ -22,7 +23,7 @@ func (h *Handler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, toContainerResponseList(containers))
+	c.JSON(http.StatusOK, mappers.ToContainerResponseList(containers))
 }
 
 func (h *Handler) Inspect(c *gin.Context) {

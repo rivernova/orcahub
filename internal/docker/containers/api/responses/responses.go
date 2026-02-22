@@ -1,4 +1,4 @@
-package api
+package responses
 
 type ContainerResponse struct {
 	ID            string            `json:"id"`
