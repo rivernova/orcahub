@@ -1,4 +1,4 @@
-package api
+package requests
 
 type CreateNetworkRequest struct {
 	Name       string            `json:"name" binding:"required"`

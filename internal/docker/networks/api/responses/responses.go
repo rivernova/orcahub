@@ -1,4 +1,4 @@
-package api
+package responses
 
 type NetworkResponse struct {
 	ID         string            `json:"id"`
