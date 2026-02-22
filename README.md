@@ -12,6 +12,8 @@ This repository is a **monorepo** containing the full OrcaHub application:
 
 AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHub and are accessed via HTTP.
 
+---
+
 ## 🌟 Features
 
 ### 🐳 Docker Management
@@ -83,6 +85,56 @@ npm run dev
 ```
 
 The API will be available at `http://localhost:9876`.
+
+---
+
+## 🧪 Testing
+
+Tests live alongside the code they cover, inside each package directory.
+
+### Unit tests
+
+No external dependencies required — mocks are used for all service and adapter interfaces.
+
+```bash
+# Run all unit tests
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run tests for a specific resource
+go test ./internal/docker/containers/...
+go test ./internal/docker/images/...
+go test ./internal/docker/volumes/...
+go test ./internal/docker/networks/...
+```
+
+### Integration tests
+
+Integration tests run against a live Docker daemon and are gated behind the `integration` build tag so they never run accidentally in CI.
+
+**Requirements:** Docker must be running locally.
+
+```bash
+# Run integration tests for all resources
+go test -tags integration ./...
+
+# Run for a specific resource
+go test -tags integration ./internal/docker/containers/adapter/...
+go test -tags integration ./internal/docker/volumes/adapter/...
+```
+
+Integration tests create real Docker resources (containers, volumes, networks) and clean them up automatically after each test via `t.Cleanup()`, even if the test fails.
+
+### What is tested
+
+| Layer | Type | Coverage |
+|---|---|---|
+| `model → api` mappers | unit | Field mapping, empty lists, nested structs |
+| `domain/service_impl` | unit + mock | Delegation to adapter, error propagation |
+| `api/handler` | HTTP + mock | Status codes, JSON parsing, query params |
+| `adapter_impl` | integration | Full lifecycle against Docker Engine |
 
 ---
 
