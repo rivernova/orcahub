@@ -1,19 +1,20 @@
-package api
+package mappers
 
 import (
+	responses "github.com/rivernova/orcahub/internal/docker/images/api/responses"
 	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
-func toImageResponseList(imgs []model.Image) []ImageResponse {
-	result := make([]ImageResponse, 0, len(imgs))
+func toImageResponseList(imgs []model.Image) []responses.ImageResponse {
+	result := make([]responses.ImageResponse, 0, len(imgs))
 	for _, img := range imgs {
 		result = append(result, toImageResponse(img))
 	}
 	return result
 }
 
-func toImageResponse(img model.Image) ImageResponse {
-	return ImageResponse{
+func toImageResponse(img model.Image) responses.ImageResponse {
+	return responses.ImageResponse{
 		ID:         img.ID,
 		Tags:       img.Tags,
 		Size:       img.Size,
@@ -23,8 +24,8 @@ func toImageResponse(img model.Image) ImageResponse {
 	}
 }
 
-func toImageInspectResponse(img *model.Image) *ImageInspectResponse {
-	return &ImageInspectResponse{
+func toImageInspectResponse(img *model.Image) *responses.ImageInspectResponse {
+	return &responses.ImageInspectResponse{
 		ImageResponse: toImageResponse(*img),
 		Os:            img.Os,
 		Architecture:  img.Architecture,

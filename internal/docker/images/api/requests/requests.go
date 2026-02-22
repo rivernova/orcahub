@@ -1,4 +1,4 @@
-package api
+package requests
 
 type PullImageRequest struct {
 	Image string        `json:"image" binding:"required"` // e.g. "nginx:latest"

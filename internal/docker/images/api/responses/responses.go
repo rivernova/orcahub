@@ -1,4 +1,4 @@
-package api
+package responses
 
 type ImageResponse struct {
 	ID         string            `json:"id"`
