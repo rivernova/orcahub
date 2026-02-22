@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rivernova/orcahub/internal/docker/containers/domain"
+	domain "github.com/rivernova/orcahub/internal/docker/containers/domain"
+	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
 
 type Handler struct {
@@ -93,7 +94,7 @@ func (h *Handler) Logs(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	logs, err := h.service.Logs(c.Request.Context(), id, domain.LogsOptions{
+	logs, err := h.service.Logs(c.Request.Context(), id, model.LogsOptions{
 		Since:  query.Since,
 		Until:  query.Until,
 		Tail:   query.Tail,
@@ -123,7 +124,7 @@ func (h *Handler) Exec(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := h.service.Exec(c.Request.Context(), id, domain.ExecOptions{
+	result, err := h.service.Exec(c.Request.Context(), id, model.ExecOptions{
 		Command:      req.Command,
 		AttachStdout: req.AttachStdout,
 		AttachStderr: req.AttachStderr,

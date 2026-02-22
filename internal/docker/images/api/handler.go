@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rivernova/orcahub/internal/docker/images/domain"
+	domain "github.com/rivernova/orcahub/internal/docker/images/domain"
+	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
 type Handler struct {
@@ -41,7 +42,7 @@ func (h *Handler) Delete(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := h.service.Delete(c.Request.Context(), id, domain.RemoveOptions{
+	result, err := h.service.Delete(c.Request.Context(), id, model.RemoveOptions{
 		Force:         query.Force,
 		PruneChildren: query.PruneChildren,
 	})
@@ -58,9 +59,9 @@ func (h *Handler) Pull(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	opts := domain.PullOptions{Image: req.Image}
+	opts := model.PullOptions{Image: req.Image}
 	if req.Auth != nil {
-		opts.Auth = &domain.RegistryAuth{
+		opts.Auth = &model.RegistryAuth{
 			Username:      req.Auth.Username,
 			Password:      req.Auth.Password,
 			ServerAddress: req.Auth.ServerAddress,
@@ -79,7 +80,7 @@ func (h *Handler) Build(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := h.service.Build(c.Request.Context(), domain.BuildOptions{
+	result, err := h.service.Build(c.Request.Context(), model.BuildOptions{
 		Tag:        req.Tag,
 		Dockerfile: req.Dockerfile,
 		Context:    req.Context,

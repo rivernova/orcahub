@@ -1,10 +1,10 @@
 package api
 
 import (
-	domain "github.com/rivernova/orcahub/internal/docker/images/domain"
+	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
-func toImageResponseList(imgs []domain.Image) []ImageResponse {
+func toImageResponseList(imgs []model.Image) []ImageResponse {
 	result := make([]ImageResponse, 0, len(imgs))
 	for _, img := range imgs {
 		result = append(result, toImageResponse(img))
@@ -12,7 +12,7 @@ func toImageResponseList(imgs []domain.Image) []ImageResponse {
 	return result
 }
 
-func toImageResponse(img domain.Image) ImageResponse {
+func toImageResponse(img model.Image) ImageResponse {
 	return ImageResponse{
 		ID:         img.ID,
 		Tags:       img.Tags,
@@ -23,7 +23,7 @@ func toImageResponse(img domain.Image) ImageResponse {
 	}
 }
 
-func toImageInspectResponse(img *domain.Image) *ImageInspectResponse {
+func toImageInspectResponse(img *model.Image) *ImageInspectResponse {
 	return &ImageInspectResponse{
 		ImageResponse: toImageResponse(*img),
 		Os:            img.Os,

@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rivernova/orcahub/internal/docker/volumes/domain"
+	domain "github.com/rivernova/orcahub/internal/docker/volumes/domain"
+	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
 )
 
 type Handler struct {
@@ -40,7 +41,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	result, err := h.service.Create(c.Request.Context(), domain.CreateVolumeOptions{
+	result, err := h.service.Create(c.Request.Context(), model.CreateVolumeOptions{
 		Name:       req.Name,
 		Driver:     req.Driver,
 		DriverOpts: req.DriverOpts,

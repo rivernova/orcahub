@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
-	"github.com/rivernova/orcahub/internal/docker/volumes/domain"
+	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
 )
 
 type VolumeAdapterImpl struct {
@@ -24,15 +24,15 @@ func NewVolumeAdapterImpl() (*VolumeAdapterImpl, error) {
 // Compile-time check: VolumeAdapterImpl must implement VolumeAdapter
 var _ VolumeAdapter = (*VolumeAdapterImpl)(nil)
 
-func (a *VolumeAdapterImpl) List(ctx context.Context) ([]domain.Volume, error) {
+func (a *VolumeAdapterImpl) List(ctx context.Context) ([]model.Volume, error) {
 	resp, err := a.client.VolumeList(ctx, volume.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list volumes: %w", err)
 	}
 
-	result := make([]domain.Volume, 0, len(resp.Volumes))
+	result := make([]model.Volume, 0, len(resp.Volumes))
 	for _, v := range resp.Volumes {
-		result = append(result, domain.Volume{
+		result = append(result, model.Volume{
 			Name:       v.Name,
 			Driver:     v.Driver,
 			Mountpoint: v.Mountpoint,
@@ -45,7 +45,7 @@ func (a *VolumeAdapterImpl) List(ctx context.Context) ([]domain.Volume, error) {
 	return result, nil
 }
 
-func (a *VolumeAdapterImpl) Inspect(ctx context.Context, name string) (*domain.Volume, error) {
+func (a *VolumeAdapterImpl) Inspect(ctx context.Context, name string) (*model.Volume, error) {
 	v, err := a.client.VolumeInspect(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect volume %s: %w", name, err)
@@ -56,7 +56,7 @@ func (a *VolumeAdapterImpl) Inspect(ctx context.Context, name string) (*domain.V
 		status[k] = val
 	}
 
-	return &domain.Volume{
+	return &model.Volume{
 		Name:       v.Name,
 		Driver:     v.Driver,
 		Mountpoint: v.Mountpoint,
@@ -68,7 +68,7 @@ func (a *VolumeAdapterImpl) Inspect(ctx context.Context, name string) (*domain.V
 	}, nil
 }
 
-func (a *VolumeAdapterImpl) Create(ctx context.Context, opts domain.CreateVolumeOptions) (*domain.Volume, error) {
+func (a *VolumeAdapterImpl) Create(ctx context.Context, opts model.CreateVolumeOptions) (*model.Volume, error) {
 	v, err := a.client.VolumeCreate(ctx, volume.CreateOptions{
 		Name:       opts.Name,
 		Driver:     opts.Driver,
@@ -79,7 +79,7 @@ func (a *VolumeAdapterImpl) Create(ctx context.Context, opts domain.CreateVolume
 		return nil, fmt.Errorf("failed to create volume %s: %w", opts.Name, err)
 	}
 
-	return &domain.Volume{
+	return &model.Volume{
 		Name:       v.Name,
 		Driver:     v.Driver,
 		Mountpoint: v.Mountpoint,

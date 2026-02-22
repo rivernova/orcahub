@@ -2,12 +2,14 @@ package domain
 
 import (
 	"context"
+
+	model "github.com/rivernova/orcahub/internal/docker/images/model"
 )
 
 type ImageService interface {
-	List(ctx context.Context) ([]Image, error)
-	Inspect(ctx context.Context, id string) (*Image, error)
-	Delete(ctx context.Context, id string, opts RemoveOptions) (*RemoveResult, error)
-	Pull(ctx context.Context, opts PullOptions) error
-	Build(ctx context.Context, opts BuildOptions) (*BuildResult, error)
+	List(ctx context.Context) ([]model.Image, error)
+	Inspect(ctx context.Context, id string) (*model.Image, error)
+	Delete(ctx context.Context, id string, opts model.RemoveOptions) (*model.RemoveResult, error)
+	Pull(ctx context.Context, opts model.PullOptions) error
+	Build(ctx context.Context, opts model.BuildOptions) (*model.BuildResult, error)
 }

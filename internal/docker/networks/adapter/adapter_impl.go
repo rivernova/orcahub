@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
-	"github.com/rivernova/orcahub/internal/docker/networks/domain"
+	model "github.com/rivernova/orcahub/internal/docker/networks/model"
 )
 
 type NetworkAdapterImpl struct {
@@ -21,18 +21,17 @@ func NewNetworkAdapterImpl() (*NetworkAdapterImpl, error) {
 	return &NetworkAdapterImpl{client: cli}, nil
 }
 
-// Compile-time check: NetworkAdapterImpl must implement NetworkAdapter
 var _ NetworkAdapter = (*NetworkAdapterImpl)(nil)
 
-func (a *NetworkAdapterImpl) List(ctx context.Context) ([]domain.Network, error) {
+func (a *NetworkAdapterImpl) List(ctx context.Context) ([]model.Network, error) {
 	networks, err := a.client.NetworkList(ctx, network.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list networks: %w", err)
 	}
 
-	result := make([]domain.Network, 0, len(networks))
+	result := make([]model.Network, 0, len(networks))
 	for _, n := range networks {
-		result = append(result, domain.Network{
+		result = append(result, model.Network{
 			ID:         n.ID,
 			Name:       n.Name,
 			Driver:     n.Driver,
@@ -47,23 +46,23 @@ func (a *NetworkAdapterImpl) List(ctx context.Context) ([]domain.Network, error)
 	return result, nil
 }
 
-func (a *NetworkAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Network, error) {
+func (a *NetworkAdapterImpl) Inspect(ctx context.Context, id string) (*model.Network, error) {
 	n, err := a.client.NetworkInspect(ctx, id, network.InspectOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect network %s: %w", id, err)
 	}
 
-	pools := make([]domain.IPAMPool, 0, len(n.IPAM.Config))
+	pools := make([]model.IPAMPool, 0, len(n.IPAM.Config))
 	for _, p := range n.IPAM.Config {
-		pools = append(pools, domain.IPAMPool{
+		pools = append(pools, model.IPAMPool{
 			Subnet:  p.Subnet,
 			Gateway: p.Gateway,
 		})
 	}
 
-	containers := make(map[string]domain.ContainerEndpoint, len(n.Containers))
+	containers := make(map[string]model.ContainerEndpoint, len(n.Containers))
 	for cid, c := range n.Containers {
-		containers[cid] = domain.ContainerEndpoint{
+		containers[cid] = model.ContainerEndpoint{
 			Name:        c.Name,
 			EndpointID:  c.EndpointID,
 			MacAddress:  c.MacAddress,
@@ -71,7 +70,7 @@ func (a *NetworkAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Ne
 		}
 	}
 
-	return &domain.Network{
+	return &model.Network{
 		ID:         n.ID,
 		Name:       n.Name,
 		Driver:     n.Driver,
@@ -81,7 +80,7 @@ func (a *NetworkAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Ne
 		Labels:     n.Labels,
 		Options:    n.Options,
 		Created:    n.Created.String(),
-		IPAM: domain.IPAM{
+		IPAM: model.IPAM{
 			Driver: n.IPAM.Driver,
 			Config: pools,
 		},
@@ -89,7 +88,7 @@ func (a *NetworkAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Ne
 	}, nil
 }
 
-func (a *NetworkAdapterImpl) Create(ctx context.Context, opts domain.CreateNetworkOptions) (*domain.Network, error) {
+func (a *NetworkAdapterImpl) Create(ctx context.Context, opts model.CreateNetworkOptions) (*model.Network, error) {
 	ipamConfig := []network.IPAMConfig{}
 	if opts.IPAM != nil {
 		for _, p := range opts.IPAM.Config {
@@ -129,7 +128,7 @@ func (a *NetworkAdapterImpl) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (a *NetworkAdapterImpl) Connect(ctx context.Context, networkID string, opts domain.ConnectOptions) error {
+func (a *NetworkAdapterImpl) Connect(ctx context.Context, networkID string, opts model.ConnectOptions) error {
 	err := a.client.NetworkConnect(ctx, networkID, opts.ContainerID, &network.EndpointSettings{
 		IPAddress: opts.IPv4Address,
 		Aliases:   opts.Aliases,
@@ -140,7 +139,7 @@ func (a *NetworkAdapterImpl) Connect(ctx context.Context, networkID string, opts
 	return nil
 }
 
-func (a *NetworkAdapterImpl) Disconnect(ctx context.Context, networkID string, opts domain.DisconnectOptions) error {
+func (a *NetworkAdapterImpl) Disconnect(ctx context.Context, networkID string, opts model.DisconnectOptions) error {
 	if err := a.client.NetworkDisconnect(ctx, networkID, opts.ContainerID, opts.Force); err != nil {
 		return fmt.Errorf("failed to disconnect container %s from network %s: %w", opts.ContainerID, networkID, err)
 	}

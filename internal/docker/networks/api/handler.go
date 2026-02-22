@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rivernova/orcahub/internal/docker/networks/domain"
+	domain "github.com/rivernova/orcahub/internal/docker/networks/domain"
+	model "github.com/rivernova/orcahub/internal/docker/networks/model"
 )
 
 type Handler struct {
@@ -40,7 +41,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	opts := domain.CreateNetworkOptions{
+	opts := model.CreateNetworkOptions{
 		Name:       req.Name,
 		Driver:     req.Driver,
 		Internal:   req.Internal,
@@ -49,11 +50,11 @@ func (h *Handler) Create(c *gin.Context) {
 		Options:    req.Options,
 	}
 	if req.IPAM != nil {
-		pools := make([]domain.IPAMPool, 0, len(req.IPAM.Config))
+		pools := make([]model.IPAMPool, 0, len(req.IPAM.Config))
 		for _, p := range req.IPAM.Config {
-			pools = append(pools, domain.IPAMPool{Subnet: p.Subnet, Gateway: p.Gateway})
+			pools = append(pools, model.IPAMPool{Subnet: p.Subnet, Gateway: p.Gateway})
 		}
-		opts.IPAM = &domain.IPAM{Driver: req.IPAM.Driver, Config: pools}
+		opts.IPAM = &model.IPAM{Driver: req.IPAM.Driver, Config: pools}
 	}
 	result, err := h.service.Create(c.Request.Context(), opts)
 	if err != nil {
@@ -79,7 +80,7 @@ func (h *Handler) Connect(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.service.Connect(c.Request.Context(), id, domain.ConnectOptions{
+	if err := h.service.Connect(c.Request.Context(), id, model.ConnectOptions{
 		ContainerID: req.ContainerID,
 		IPv4Address: req.IPv4Address,
 		Aliases:     req.Aliases,
@@ -97,7 +98,7 @@ func (h *Handler) Disconnect(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.service.Disconnect(c.Request.Context(), id, domain.DisconnectOptions{
+	if err := h.service.Disconnect(c.Request.Context(), id, model.DisconnectOptions{
 		ContainerID: req.ContainerID,
 		Force:       req.Force,
 	}); err != nil {

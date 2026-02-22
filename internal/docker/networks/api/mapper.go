@@ -1,10 +1,10 @@
 package api
 
 import (
-	domain "github.com/rivernova/orcahub/internal/docker/networks/domain"
+	model "github.com/rivernova/orcahub/internal/docker/networks/model"
 )
 
-func toNetworkResponseList(ns []domain.Network) []NetworkResponse {
+func toNetworkResponseList(ns []model.Network) []NetworkResponse {
 	result := make([]NetworkResponse, 0, len(ns))
 	for _, n := range ns {
 		result = append(result, toNetworkResponse(n))
@@ -12,7 +12,7 @@ func toNetworkResponseList(ns []domain.Network) []NetworkResponse {
 	return result
 }
 
-func toNetworkResponse(n domain.Network) NetworkResponse {
+func toNetworkResponse(n model.Network) NetworkResponse {
 	return NetworkResponse{
 		ID:         n.ID,
 		Name:       n.Name,
@@ -25,7 +25,7 @@ func toNetworkResponse(n domain.Network) NetworkResponse {
 	}
 }
 
-func toNetworkInspectResponse(n *domain.Network) *NetworkInspectResponse {
+func toNetworkInspectResponse(n *model.Network) *NetworkInspectResponse {
 	pools := make([]IPAMPoolInfo, 0, len(n.IPAM.Config))
 	for _, p := range n.IPAM.Config {
 		pools = append(pools, IPAMPoolInfo{Subnet: p.Subnet, Gateway: p.Gateway})

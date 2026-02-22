@@ -29,7 +29,6 @@ func NewImageAdapterImpl() (*ImageAdapterImpl, error) {
 	return &ImageAdapterImpl{client: cli}, nil
 }
 
-// Compile-time check: ImageAdapterImpl must implement ImageAdapter
 var _ ImageAdapter = (*ImageAdapterImpl)(nil)
 
 func (a *ImageAdapterImpl) List(ctx context.Context) ([]domain.Image, error) {

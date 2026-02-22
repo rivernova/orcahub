@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/rivernova/orcahub/internal/docker/containers/domain"
+	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )
 
 type ContainerAdapterImpl struct {
@@ -26,29 +26,28 @@ func NewContainerAdapterImpl() (*ContainerAdapterImpl, error) {
 	return &ContainerAdapterImpl{client: cli}, nil
 }
 
-// Compile-time check: ContainerAdapterImpl must implement ContainerAdapter
 var _ ContainerAdapter = (*ContainerAdapterImpl)(nil)
 
-func (a *ContainerAdapterImpl) List(ctx context.Context) ([]domain.Container, error) {
+func (a *ContainerAdapterImpl) List(ctx context.Context) ([]model.Container, error) {
 	containers, err := a.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list containers: %w", err)
 	}
 
-	result := make([]domain.Container, 0, len(containers))
+	result := make([]model.Container, 0, len(containers))
 	for _, c := range containers {
-		ports := make([]domain.Port, 0, len(c.Ports))
+		ports := make([]model.Port, 0, len(c.Ports))
 		for _, p := range c.Ports {
-			ports = append(ports, domain.Port{
+			ports = append(ports, model.Port{
 				PrivatePort: int(p.PrivatePort),
 				PublicPort:  int(p.PublicPort),
 				Type:        p.Type,
 				IP:          p.IP,
 			})
 		}
-		mounts := make([]domain.Mount, 0, len(c.Mounts))
+		mounts := make([]model.Mount, 0, len(c.Mounts))
 		for _, m := range c.Mounts {
-			mounts = append(mounts, domain.Mount{
+			mounts = append(mounts, model.Mount{
 				Type:        string(m.Type),
 				Source:      m.Source,
 				Destination: m.Destination,
@@ -60,7 +59,7 @@ func (a *ContainerAdapterImpl) List(ctx context.Context) ([]domain.Container, er
 		if len(c.Names) > 0 {
 			name = c.Names[0][1:]
 		}
-		result = append(result, domain.Container{
+		result = append(result, model.Container{
 			ID:      c.ID,
 			Name:    name,
 			Image:   c.Image,
@@ -76,19 +75,19 @@ func (a *ContainerAdapterImpl) List(ctx context.Context) ([]domain.Container, er
 	return result, nil
 }
 
-func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*domain.Container, error) {
+func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*model.Container, error) {
 	c, err := a.client.ContainerInspect(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect container %s: %w", id, err)
 	}
 
-	ports := make([]domain.Port, 0)
+	ports := make([]model.Port, 0)
 	for port, bindings := range c.NetworkSettings.Ports {
 		for _, b := range bindings {
 			publicPort := 0
 			fmt.Sscanf(b.HostPort, "%d", &publicPort)
 			privatePort, _ := nat.ParsePort(port.Port())
-			ports = append(ports, domain.Port{
+			ports = append(ports, model.Port{
 				PrivatePort: privatePort,
 				PublicPort:  publicPort,
 				Type:        port.Proto(),
@@ -97,9 +96,9 @@ func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*domain.
 		}
 	}
 
-	mounts := make([]domain.Mount, 0, len(c.Mounts))
+	mounts := make([]model.Mount, 0, len(c.Mounts))
 	for _, m := range c.Mounts {
-		mounts = append(mounts, domain.Mount{
+		mounts = append(mounts, model.Mount{
 			Type:        string(m.Type),
 			Source:      m.Source,
 			Destination: m.Destination,
@@ -108,9 +107,9 @@ func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*domain.
 		})
 	}
 
-	networks := make(map[string]domain.NetworkEndpoint)
+	networks := make(map[string]model.NetworkEndpoint)
 	for name, n := range c.NetworkSettings.Networks {
-		networks[name] = domain.NetworkEndpoint{
+		networks[name] = model.NetworkEndpoint{
 			NetworkID:  n.NetworkID,
 			IPAddress:  n.IPAddress,
 			Gateway:    n.Gateway,
@@ -125,7 +124,7 @@ func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*domain.
 
 	created, _ := time.Parse(time.RFC3339, c.Created)
 
-	return &domain.Container{
+	return &model.Container{
 		ID:            c.ID,
 		Name:          name,
 		Image:         c.Config.Image,
@@ -151,7 +150,7 @@ func (a *ContainerAdapterImpl) Inspect(ctx context.Context, id string) (*domain.
 	}, nil
 }
 
-func (a *ContainerAdapterImpl) Create(ctx context.Context, c domain.Container) (*domain.Container, error) {
+func (a *ContainerAdapterImpl) Create(ctx context.Context, c model.Container) (*model.Container, error) {
 	portBindings := nat.PortMap{}
 	exposedPorts := nat.PortSet{}
 	for _, p := range c.Ports {
@@ -184,7 +183,7 @@ func (a *ContainerAdapterImpl) Create(ctx context.Context, c domain.Container) (
 		return nil, fmt.Errorf("failed to create container: %w", err)
 	}
 
-	return &domain.Container{ID: resp.ID}, nil
+	return &model.Container{ID: resp.ID}, nil
 }
 
 func (a *ContainerAdapterImpl) Delete(ctx context.Context, id string) error {
@@ -215,7 +214,7 @@ func (a *ContainerAdapterImpl) Restart(ctx context.Context, id string) error {
 	return nil
 }
 
-func (a *ContainerAdapterImpl) Logs(ctx context.Context, id string, opts domain.LogsOptions) ([]string, error) {
+func (a *ContainerAdapterImpl) Logs(ctx context.Context, id string, opts model.LogsOptions) ([]string, error) {
 	reader, err := a.client.ContainerLogs(ctx, id, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
@@ -237,7 +236,7 @@ func (a *ContainerAdapterImpl) Logs(ctx context.Context, id string, opts domain.
 	return lines, scanner.Err()
 }
 
-func (a *ContainerAdapterImpl) Stats(ctx context.Context, id string) (*domain.ContainerStats, error) {
+func (a *ContainerAdapterImpl) Stats(ctx context.Context, id string) (*model.ContainerStats, error) {
 	resp, err := a.client.ContainerStatsOneShot(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stats for container %s: %w", id, err)
@@ -283,7 +282,7 @@ func (a *ContainerAdapterImpl) Stats(ctx context.Context, id string) (*domain.Co
 		}
 	}
 
-	return &domain.ContainerStats{
+	return &model.ContainerStats{
 		CPUPercent:    cpuPercent,
 		MemoryUsage:   memUsage,
 		MemoryLimit:   memLimit,
@@ -296,7 +295,7 @@ func (a *ContainerAdapterImpl) Stats(ctx context.Context, id string) (*domain.Co
 	}, nil
 }
 
-func (a *ContainerAdapterImpl) Exec(ctx context.Context, id string, opts domain.ExecOptions) (*domain.ExecResult, error) {
+func (a *ContainerAdapterImpl) Exec(ctx context.Context, id string, opts model.ExecOptions) (*model.ExecResult, error) {
 	execID, err := a.client.ContainerExecCreate(ctx, id, container.ExecOptions{
 		Cmd:          opts.Command,
 		AttachStdout: opts.AttachStdout,
@@ -322,7 +321,7 @@ func (a *ContainerAdapterImpl) Exec(ctx context.Context, id string, opts domain.
 		return nil, fmt.Errorf("failed to inspect exec: %w", err)
 	}
 
-	return &domain.ExecResult{
+	return &model.ExecResult{
 		Output:   string(output),
 		ExitCode: inspect.ExitCode,
 	}, nil
