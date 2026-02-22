@@ -12,53 +12,6 @@ This repository is a **monorepo** containing the full OrcaHub application:
 
 AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHub and are accessed via HTTP.
 
----
-
-## 🧩 Monorepo Structure
-
-```txt
-orcahub/
-│
-├── cmd/
-│   └── server/
-│       └── main.go                         # Entry point — wires adapters, services, handlers, router
-│
-├── internal/
-│   └── docker/
-│   │   ├── containers/
-│   │   │   ├── model/        model.go      # Shared types (Container, Port, Mount, Stats...)
-│   │   │   ├── adapter/      adapter.go    # ContainerAdapter interface
-│   │   │   │                 adapter_impl.go  # DockerAdapter (Docker SDK v28)
-│   │   │   ├── domain/       service.go    # ContainerService interface
-│   │   │   │                 service_impl.go  # Business logic
-│   │   │   └── api/          handler.go    # HTTP handlers
-│   │   │                     requests.go
-│   │   │                     responses.go
-│   │   │       ├── mappers/  mapper.go     # model ↔ API DTO conversion
-│   │   │       └── router/   router.go     # Route registration
-│   │   │
-│   │   ├── images/           (same structure as containers/)
-│   │   ├── volumes/          (same structure as containers/)
-│   │   └── networks/         (same structure as containers/)
-│   │
-│   ├── k8s/                                # Kubernetes resources (coming soon)
-│   └── router/
-│       └── router.go                       # Main router — assembles all resource routes
-│
-├── frontend/                               # React frontend (dashboard UI)
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── vite.config.*
-│
-├── .env                                    # Local environment variables (not committed)
-├── go.mod
-├── go.sum
-└── README.md
-```
-
----
-
 ## 🌟 Features
 
 ### 🐳 Docker Management
@@ -88,22 +41,6 @@ orcahub/
 
 ---
 
-## 🧱 Backend Architecture (Go)
-
-The backend follows a **clean layered architecture** designed to avoid circular imports and keep each layer's responsibility clear.
-
-```txt
-internal/docker/<resource>/
-│
-├── model/          Shared pure types — imported by all layers, imports nothing internal
-├── adapter/        Interface + Docker SDK implementation — imports model
-├── domain/         Service interface + business logic — imports model + adapter
-└── api/
-    ├── handler     HTTP handlers — imports domain + model
-    ├── mappers/    DTO conversion — imports api + model
-    └── router/     Route registration
-```
-
 ### Import graph (no cycles)
 
 ```
@@ -111,17 +48,6 @@ model  ←  adapter  ←  domain  ←  api/handler
   ↑                                   ↑
   └──────────── api/mappers ───────────┘
 ```
-
-### Layer responsibilities
-
-| Layer | Responsibility |
-|---|---|
-| `model` | Plain Go structs — no business logic, no external imports |
-| `adapter` | Talks to Docker SDK, translates SDK types → `model` types |
-| `domain` | Service interfaces and implementations, orchestrates adapter calls |
-| `api/handler` | Parses HTTP requests, calls service, returns JSON |
-| `api/mappers` | Converts `model` structs ↔ API request/response DTOs |
-| `api/router` | Registers routes on a Gin `RouterGroup` |
 
 ### Environment variables
 
