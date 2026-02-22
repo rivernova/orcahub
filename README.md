@@ -1,5 +1,6 @@
 # 🐋 OrcaHub
-### Unified Dashboard for Docker & Kubernetes
+
+## Unified Dashboard for Docker & Kubernetes
 
 OrcaHub is an open-source control center that unifies **Docker** and **Kubernetes** into a single, modern dashboard.
 It provides a clean interface for inspecting, managing, and understanding your containers, clusters, logs, and resources — all in one place.
@@ -17,6 +18,7 @@ AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHu
 ## 🌟 Features
 
 ### 🐳 Docker Management
+
 - List containers, images, volumes, networks
 - Start, stop, restart, and delete containers
 - Inspect details, view logs, run exec commands
@@ -24,17 +26,21 @@ AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHu
 - Manage port bindings, mounts, environment variables
 
 ### ☸️ Kubernetes Management *(coming soon)*
+
 - Connect via local kubeconfig or in-cluster config
 - Explore namespaces, pods, deployments, services, nodes
 - View logs, events, and resource details
 
 ### 📊 Unified Dashboard
+
 - Real-time views of Docker and Kubernetes resources
 - Log and YAML views
 - Clean, modern UI designed for clarity and speed
 
 ### 🧠 Optional AI-Assisted Workflows
-*(Enabled when an external LLM provider is configured)*
+
+#### Enabled when an external LLM provider is configured
+
 - Explain pod/container failures
 - Summarize logs and events
 - Generate Kubernetes YAML
@@ -45,7 +51,7 @@ AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHu
 
 ### Import graph (no cycles)
 
-```
+``` txt
 model  ←  adapter  ←  domain  ←  api/handler
   ↑                                   ↑
   └──────────── api/mappers ───────────┘
@@ -54,7 +60,7 @@ model  ←  adapter  ←  domain  ←  api/handler
 ### Environment variables
 
 | Variable | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `ORCAHUB_PORT` | `9876` | Port the server listens on |
 
 The server reads `.env` automatically on startup via `godotenv`. In Docker, variables are injected directly into the container environment.
@@ -130,7 +136,7 @@ Integration tests create real Docker resources (containers, volumes, networks) a
 ### What is tested
 
 | Layer | Type | Coverage |
-|---|---|---|
+| --- | --- | --- |
 | `model → api` mappers | unit | Field mapping, empty lists, nested structs |
 | `domain/service_impl` | unit + mock | Delegation to adapter, error propagation |
 | `api/handler` | HTTP + mock | Status codes, JSON parsing, query params |
