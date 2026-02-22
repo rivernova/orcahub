@@ -1,4 +1,4 @@
-package api
+package requests
 
 type CreateVolumeRequest struct {
 	Name       string            `json:"name" binding:"required"`

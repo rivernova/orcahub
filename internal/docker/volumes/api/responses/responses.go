@@ -1,4 +1,4 @@
-package api
+package responses
 
 type VolumeResponse struct {
 	Name       string            `json:"name"`
