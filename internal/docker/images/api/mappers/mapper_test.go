@@ -1,4 +1,4 @@
-package api_test
+package mappers_test
 
 import (
 	"testing"
