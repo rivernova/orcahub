@@ -18,7 +18,7 @@ func TestToVolumeResponse(t *testing.T) {
 		CreatedAt:  "2024-01-01T00:00:00Z",
 	}
 
-	resp := mappers.ToVolumeResponse(v)
+	resp := mappers.ToVolumeResponse(*v)
 
 	assert.Equal(t, "postgres-data", resp.Name)
 	assert.Equal(t, "local", resp.Driver)
