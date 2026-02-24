@@ -141,21 +141,3 @@ Integration tests create real Docker resources (containers, volumes, networks) a
 | `domain/service_impl` | unit + mock | Delegation to adapter, error propagation |
 | `api/handler` | HTTP + mock | Status codes, JSON parsing, query params |
 | `adapter_impl` | integration | Full lifecycle against Docker Engine |
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome — code, documentation, ideas, testing.
-
-1. Fork the repo
-2. Create a feature branch
-3. Open a pull request
-
-A `CONTRIBUTING.md` guide will be added as the project matures.
-
----
-
-## 📄 License
-
-MIT License — free to use, modify, and distribute.
