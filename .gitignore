@@ -31,3 +31,15 @@ go.work.sum
 .idea/
 *.swp
 *.swo
+
+# Frontend / Node.js development
+/web/node_modules/
+/web/dist/
+/web/.vite/
+/web/.cache/
+/web/.pnpm/
+/web/.turbo/
+/web/coverage/
+
+# log files
+*.log
