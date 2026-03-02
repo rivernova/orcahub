@@ -12,5 +12,7 @@ func Register(rg *gin.RouterGroup, handler *api.Handler) {
 		volumes.GET("/:name", handler.Inspect)
 		volumes.POST("", handler.Create)
 		volumes.DELETE("/:name", handler.Delete)
+
+		volumes.POST("/prune", handler.Prune)
 	}
 }

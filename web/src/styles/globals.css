@@ -1,0 +1,56 @@
+/* ═══ EXEC PANEL ═══ */
+.exec-terminal {
+  background: #020409;
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.exec-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #020409;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(0,212,255,0.25);
+  padding: 8px 12px;
+  transition: var(--t);
+}
+.exec-input-bar:focus-within {
+  border-color: rgba(0,212,255,0.5);
+  box-shadow: 0 0 0 2px rgba(0,212,255,0.08);
+}
+
+/* ═══ MODAL FORM ═══ */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.form-input {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 8px 12px; color: var(--text-primary);
+  font-family: var(--font-ui); font-size: 13px; outline: none; transition: var(--t);
+}
+.form-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+/* ═══ ENV SWITCHER (K8s hidden when not available) ═══ */
+.env-switcher { display: flex; gap: 4px; background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--r-md); padding: 3px; }
+.env-btn { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px; border: 1px solid transparent; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); background: none; cursor: pointer; transition: var(--t); }
+.env-btn:hover { color: var(--text-primary); background: var(--bg-glass-hover); }
+.env-btn-active.docker { color: #60d3ff; background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.25); }
+.env-btn-active.k8s { color: #a78bfa; background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); }
+.env-btn-dot { width: 6px; height: 6px; border-radius: 50%; }
+.env-btn-dot.connected { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+.env-btn-dot.disconnected { background: var(--text-muted); }
+.env-btn-dot.k8s-connected { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; }
+
+/* K8s connect screen */
+.k8s-connect-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; }
+.k8s-connect-orb { font-size: 72px; margin-bottom: 20px; }
+.k8s-connect-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+.k8s-connect-sub { font-size: 14px; color: var(--text-secondary); max-width: 440px; line-height: 1.6; }
+
+/* btn-xs */
+.btn-xs { padding: 3px 8px; font-size: 11px; height: 24px; }
+
+/* sidebar env badge */
+.sidebar-env-badge { display: flex; align-items: center; gap: 7px; padding: 6px 16px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.sidebar-env-badge.docker { color: rgba(0,212,255,0.5); }
+.sidebar-env-badge.k8s { color: rgba(167,139,250,0.5); }
