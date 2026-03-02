@@ -71,6 +71,11 @@ func (m *mockService) Exec(ctx context.Context, id string, opts model.ExecOption
 	return args.Get(0).(*model.ExecResult), args.Error(1)
 }
 
+func (m *mockService) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func setupRouter(svc *mockService) *gin.Engine {
 	r := gin.New()
 	h := containerapi.NewHandler(svc)
@@ -84,6 +89,7 @@ func setupRouter(svc *mockService) *gin.Engine {
 	r.GET("/containers/:id/logs", h.Logs)
 	r.GET("/containers/:id/stats", h.Stats)
 	r.POST("/containers/:id/exec", h.Exec)
+	r.POST("/containers/prune", h.Prune)
 	return r
 }
 
@@ -291,4 +297,20 @@ func TestHandler_Exec_OK(t *testing.T) {
 	var resp map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, float64(0), resp["exit_code"])
+}
+
+func TestHandler_Prune_OK(t *testing.T) {
+	svc := &mockService{}
+	r := setupRouter(svc)
+
+	expected := model.PruneResult{Deleted: []string{"c1", "c2"}, SpaceReclaimed: 1024}
+	svc.On("Prune", mock.Anything).Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/containers/prune", nil))
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, float64(1024), resp["space_reclaimed"])
 }

@@ -62,6 +62,11 @@ func (m *mockAdapter) Exec(ctx context.Context, id string, opts model.ExecOption
 	return args.Get(0).(*model.ExecResult), args.Error(1)
 }
 
+func (m *mockAdapter) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func TestContainerService_List(t *testing.T) {
 	adapter := &mockAdapter{}
 	svc := domain.NewContainerServiceImpl(adapter)
@@ -229,4 +234,17 @@ func TestContainerService_Exec(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, result.ExitCode)
 	assert.Contains(t, result.Output, "total 48")
+}
+
+func TestContainerService_Prune(t *testing.T) {
+	adapter := &mockAdapter{}
+	svc := domain.NewContainerServiceImpl(adapter)
+	ctx := context.Background()
+
+	expected := model.PruneResult{Deleted: []string{"a", "b"}, SpaceReclaimed: 999}
+	adapter.On("Prune", ctx).Return(expected, nil)
+
+	result, err := svc.Prune(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }

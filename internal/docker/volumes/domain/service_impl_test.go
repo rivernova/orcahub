@@ -35,6 +35,11 @@ func (m *mockVolumeAdapter) Delete(ctx context.Context, name string) error {
 	return m.Called(ctx, name).Error(0)
 }
 
+func (m *mockVolumeAdapter) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func TestVolumeService_List(t *testing.T) {
 	a := &mockVolumeAdapter{}
 	svc := domain.NewVolumeServiceImpl(a)
@@ -121,4 +126,17 @@ func TestVolumeService_Delete_Error(t *testing.T) {
 
 	a.On("Delete", ctx, "in-use").Return(errors.New("volume in use"))
 	assert.Error(t, svc.Delete(ctx, "in-use"))
+}
+
+func TestVolumeService_Prune(t *testing.T) {
+	a := &mockVolumeAdapter{}
+	svc := domain.NewVolumeServiceImpl(a)
+	ctx := context.Background()
+
+	expected := model.PruneResult{Deleted: []string{"v1"}, SpaceReclaimed: 1234}
+	a.On("Prune", ctx).Return(expected, nil)
+
+	result, err := svc.Prune(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }

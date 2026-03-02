@@ -1,6 +1,8 @@
 package mappers
 
 import (
+	"strconv"
+
 	requests "github.com/rivernova/orcahub/internal/docker/containers/api/requests"
 	responses "github.com/rivernova/orcahub/internal/docker/containers/api/responses"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
@@ -59,8 +61,12 @@ func ToContainerInspectResponse(c *model.Container) *responses.ContainerInspectR
 func ToDomainContainer(req requests.CreateContainerRequest) model.Container {
 	ports := make([]model.Port, 0, len(req.Ports))
 	for _, p := range req.Ports {
+		private, _ := strconv.Atoi(p.ContainerPort)
+		public, _ := strconv.Atoi(p.HostPort)
 		ports = append(ports, model.Port{
-			Type: p.Protocol,
+			PrivatePort: private,
+			PublicPort:  public,
+			Type:        p.Protocol,
 		})
 	}
 	return model.Container{

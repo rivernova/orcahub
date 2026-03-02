@@ -20,5 +20,7 @@ func Register(rg *gin.RouterGroup, handler *api.Handler) {
 		containers.GET("/:id/logs", handler.Logs)
 		containers.GET("/:id/stats", handler.Stats)
 		containers.POST("/:id/exec", handler.Exec)
+
+		containers.POST("/prune", handler.Prune)
 	}
 }

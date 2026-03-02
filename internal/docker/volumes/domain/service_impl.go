@@ -30,3 +30,7 @@ func (s *VolumeServiceImpl) Create(ctx context.Context, opts model.CreateVolumeO
 func (s *VolumeServiceImpl) Delete(ctx context.Context, name string) error {
 	return s.adapter.Delete(ctx, name)
 }
+
+func (s *VolumeServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	return s.adapter.Prune(ctx)
+}

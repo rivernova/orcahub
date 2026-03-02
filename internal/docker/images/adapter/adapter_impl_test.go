@@ -52,3 +52,10 @@ func TestImageAdapter_Inspect_NotFound(t *testing.T) {
 	_, err = a.Inspect(context.Background(), "sha256:doesnotexist0000000000000000")
 	assert.Error(t, err)
 }
+
+func TestImageAdapter_Prune(t *testing.T) {
+	a, err := adapter.NewImageAdapterImpl()
+	require.NoError(t, err)
+	_, err = a.Prune(context.Background())
+	assert.NoError(t, err)
+}

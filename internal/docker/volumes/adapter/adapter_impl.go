@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	model "github.com/rivernova/orcahub/internal/docker/volumes/model"
@@ -95,4 +96,15 @@ func (a *VolumeAdapterImpl) Delete(ctx context.Context, name string) error {
 		return fmt.Errorf("failed to delete volume %s: %w", name, err)
 	}
 	return nil
+}
+
+func (a *VolumeAdapterImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	report, err := a.client.VolumesPrune(ctx, filters.Args{})
+	if err != nil {
+		return model.PruneResult{}, fmt.Errorf("failed to prune volumes: %w", err)
+	}
+	return model.PruneResult{
+		Deleted:        report.VolumesDeleted,
+		SpaceReclaimed: int64(report.SpaceReclaimed),
+	}, nil
 }

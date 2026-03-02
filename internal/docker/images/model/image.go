@@ -55,3 +55,8 @@ type RemoveResult struct {
 	Deleted  []string
 	Untagged []string
 }
+
+type PruneResult struct {
+	Deleted        []string `json:"deleted"`
+	SpaceReclaimed int64    `json:"space_reclaimed"`
+}

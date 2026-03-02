@@ -63,3 +63,10 @@ func TestVolumeAdapter_Inspect_NotFound(t *testing.T) {
 	_, err = a.Inspect(context.Background(), "nonexistent-volume")
 	assert.Error(t, err)
 }
+
+func TestVolumeAdapter_Prune(t *testing.T) {
+	a, err := adapter.NewVolumeAdapterImpl()
+	require.NoError(t, err)
+	_, err = a.Prune(context.Background())
+	assert.NoError(t, err)
+}

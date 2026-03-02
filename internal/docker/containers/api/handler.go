@@ -138,3 +138,12 @@ func (h *Handler) Exec(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, responses.ExecResponse{Output: result.Output, ExitCode: result.ExitCode})
 }
+
+func (h *Handler) Prune(c *gin.Context) {
+	result, err := h.service.Prune(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}

@@ -21,6 +21,7 @@ import (
 	networkdomain "github.com/rivernova/orcahub/internal/docker/networks/domain"
 
 	"github.com/rivernova/orcahub/internal/router"
+	systemapi "github.com/rivernova/orcahub/internal/system"
 )
 
 func main() {
@@ -56,11 +57,15 @@ func main() {
 	networkService := networkdomain.NewNetworkServiceImpl(networkAdapt)
 	networkHandler := networkapi.NewHandler(networkService)
 
+	// System
+	systemHandler := systemapi.NewHandler()
+
 	r := router.SetupRouter(&router.Handlers{
 		Containers: containerHandler,
 		Images:     imageHandler,
 		Volumes:    volumeHandler,
 		Networks:   networkHandler,
+		System:     systemHandler,
 	})
 
 	port := getPort()

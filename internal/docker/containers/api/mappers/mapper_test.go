@@ -97,6 +97,12 @@ func TestToDomainContainer(t *testing.T) {
 		Image:         "nginx:latest",
 		RestartPolicy: "always",
 		Labels:        map[string]string{"app": "web"},
+		Environment:   []string{"PORT=80"},
+		Ports: []requests.PortBinding{{
+			HostPort:      "8080",
+			ContainerPort: "80",
+			Protocol:      "tcp",
+		}},
 	}
 
 	result := mappers.ToDomainContainer(req)

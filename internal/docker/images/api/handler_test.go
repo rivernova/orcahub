@@ -49,6 +49,11 @@ func (m *mockImageService) Build(ctx context.Context, opts model.BuildOptions) (
 	return args.Get(0).(*model.BuildResult), args.Error(1)
 }
 
+func (m *mockImageService) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func setupImageRouter(svc *mockImageService) *gin.Engine {
 	r := gin.New()
 	h := imageapi.NewHandler(svc)
@@ -57,6 +62,7 @@ func setupImageRouter(svc *mockImageService) *gin.Engine {
 	r.DELETE("/images/:id", h.Delete)
 	r.POST("/images/pull", h.Pull)
 	r.POST("/images/build", h.Build)
+	r.POST("/images/prune", h.Prune)
 	return r
 }
 
@@ -178,4 +184,20 @@ func TestImageHandler_Build_OK(t *testing.T) {
 	var resp map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, "sha256:new", resp["image_id"])
+}
+
+func TestImageHandler_Prune_OK(t *testing.T) {
+	svc := &mockImageService{}
+	r := setupImageRouter(svc)
+
+	expected := model.PruneResult{Deleted: []string{"img1"}, SpaceReclaimed: 4096}
+	svc.On("Prune", mock.Anything).Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/images/prune", nil))
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, float64(4096), resp["space_reclaimed"])
 }

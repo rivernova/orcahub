@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
@@ -324,5 +325,16 @@ func (a *ContainerAdapterImpl) Exec(ctx context.Context, id string, opts model.E
 	return &model.ExecResult{
 		Output:   string(output),
 		ExitCode: inspect.ExitCode,
+	}, nil
+}
+
+func (a *ContainerAdapterImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	report, err := a.client.ContainersPrune(ctx, filters.Args{})
+	if err != nil {
+		return model.PruneResult{}, fmt.Errorf("failed to prune containers: %w", err)
+	}
+	return model.PruneResult{
+		Deleted:        report.ContainersDeleted,
+		SpaceReclaimed: int64(report.SpaceReclaimed),
 	}, nil
 }

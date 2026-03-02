@@ -17,4 +17,5 @@ type ContainerAdapter interface {
 	Logs(ctx context.Context, id string, opts model.LogsOptions) ([]string, error)
 	Stats(ctx context.Context, id string) (*model.ContainerStats, error)
 	Exec(ctx context.Context, id string, opts model.ExecOptions) (*model.ExecResult, error)
+	Prune(ctx context.Context) (model.PruneResult, error)
 }

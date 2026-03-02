@@ -2,6 +2,7 @@ package adapter_test
 
 import (
 	"context"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -26,6 +27,9 @@ func TestDockerAdapter_Lifecycle(t *testing.T) {
 	a, err := adapter.NewContainerAdapterImpl()
 	require.NoError(t, err)
 	ctx := context.Background()
+
+	// try to pull alpine in case it's missing; ignore error
+	_ = exec.Command("docker", "pull", "alpine:latest").Run()
 
 	// Create
 	created, err := a.Create(ctx, model.Container{
@@ -95,4 +99,13 @@ func TestDockerAdapter_Inspect_NotFound(t *testing.T) {
 
 	_, err = a.Inspect(context.Background(), "nonexistent-container-id")
 	assert.Error(t, err)
+}
+
+func TestDockerAdapter_Prune(t *testing.T) {
+	a, err := adapter.NewContainerAdapterImpl()
+	require.NoError(t, err)
+
+	// calling prune should not error even if there is nothing to delete
+	_, err = a.Prune(context.Background())
+	assert.NoError(t, err)
 }

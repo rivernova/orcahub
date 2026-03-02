@@ -42,6 +42,11 @@ func (m *mockVolumeService) Delete(ctx context.Context, name string) error {
 	return m.Called(ctx, name).Error(0)
 }
 
+func (m *mockVolumeService) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func setupVolumeRouter(svc *mockVolumeService) *gin.Engine {
 	r := gin.New()
 	h := volumeapi.NewHandler(svc)
@@ -49,6 +54,7 @@ func setupVolumeRouter(svc *mockVolumeService) *gin.Engine {
 	r.GET("/volumes/:name", h.Inspect)
 	r.POST("/volumes", h.Create)
 	r.DELETE("/volumes/:name", h.Delete)
+	r.POST("/volumes/prune", h.Prune)
 	return r
 }
 
@@ -164,4 +170,20 @@ func TestVolumeHandler_Delete_Error(t *testing.T) {
 	r.ServeHTTP(w, httptest.NewRequest(http.MethodDelete, "/volumes/in-use", nil))
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestVolumeHandler_Prune_OK(t *testing.T) {
+	svc := &mockVolumeService{}
+	r := setupVolumeRouter(svc)
+
+	expected := model.PruneResult{Deleted: []string{"v1"}, SpaceReclaimed: 2048}
+	svc.On("Prune", mock.Anything).Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/volumes/prune", nil))
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.Equal(t, float64(2048), resp["space_reclaimed"])
 }

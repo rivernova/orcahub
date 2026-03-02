@@ -54,3 +54,7 @@ func (s *ContainerServiceImpl) Stats(ctx context.Context, id string) (*model.Con
 func (s *ContainerServiceImpl) Exec(ctx context.Context, id string, opts model.ExecOptions) (*model.ExecResult, error) {
 	return s.adapter.Exec(ctx, id, opts)
 }
+
+func (s *ContainerServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	return s.adapter.Prune(ctx)
+}

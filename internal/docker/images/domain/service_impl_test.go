@@ -42,6 +42,11 @@ func (m *mockImageAdapter) Build(ctx context.Context, opts model.BuildOptions) (
 	return args.Get(0).(*model.BuildResult), args.Error(1)
 }
 
+func (m *mockImageAdapter) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func TestImageService_List(t *testing.T) {
 	a := &mockImageAdapter{}
 	svc := domain.NewImageServiceImpl(a)
@@ -135,4 +140,17 @@ func TestImageService_Build(t *testing.T) {
 	result, err := svc.Build(ctx, opts)
 	assert.NoError(t, err)
 	assert.Equal(t, "sha256:new", result.ImageID)
+}
+
+func TestImageService_Prune(t *testing.T) {
+	a := &mockImageAdapter{}
+	svc := domain.NewImageServiceImpl(a)
+	ctx := context.Background()
+
+	expected := model.PruneResult{Deleted: []string{"i1"}, SpaceReclaimed: 7890}
+	a.On("Prune", ctx).Return(expected, nil)
+
+	result, err := svc.Prune(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }

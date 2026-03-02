@@ -101,3 +101,12 @@ func (h *Handler) Build(c *gin.Context) {
 		Warnings: result.Warnings,
 	})
 }
+
+func (h *Handler) Prune(c *gin.Context) {
+	result, err := h.service.Prune(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}

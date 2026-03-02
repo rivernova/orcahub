@@ -13,5 +13,7 @@ func Register(rg *gin.RouterGroup, handler *api.Handler) {
 		images.DELETE("/:id", handler.Delete)
 		images.POST("/pull", handler.Pull)
 		images.POST("/build", handler.Build)
+
+		images.POST("/prune", handler.Prune)
 	}
 }

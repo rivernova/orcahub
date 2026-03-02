@@ -76,3 +76,8 @@ type ExecResult struct {
 	Output   string
 	ExitCode int
 }
+
+type PruneResult struct {
+	Deleted        []string `json:"deleted"`
+	SpaceReclaimed int64    `json:"space_reclaimed"`
+}

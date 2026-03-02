@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
@@ -194,4 +195,18 @@ func (a *ImageAdapterImpl) Build(ctx context.Context, opts model.BuildOptions) (
 		Tags:     []string{opts.Tag},
 		Warnings: warnings,
 	}, nil
+}
+
+func (a *ImageAdapterImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	report, err := a.client.ImagesPrune(ctx, filters.NewArgs(filters.Arg("dangling", "false")))
+	if err != nil {
+		return model.PruneResult{}, fmt.Errorf("failed to prune images: %w", err)
+	}
+	deleted := make([]string, 0, len(report.ImagesDeleted))
+	for _, item := range report.ImagesDeleted {
+		if item.Deleted != "" {
+			deleted = append(deleted, item.Deleted)
+		}
+	}
+	return model.PruneResult{Deleted: deleted, SpaceReclaimed: int64(report.SpaceReclaimed)}, nil
 }

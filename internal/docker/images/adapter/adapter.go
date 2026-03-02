@@ -12,4 +12,5 @@ type ImageAdapter interface {
 	Delete(ctx context.Context, id string, opts model.RemoveOptions) (*model.RemoveResult, error)
 	Pull(ctx context.Context, opts model.PullOptions) error
 	Build(ctx context.Context, opts model.BuildOptions) (*model.BuildResult, error)
+	Prune(ctx context.Context) (model.PruneResult, error)
 }

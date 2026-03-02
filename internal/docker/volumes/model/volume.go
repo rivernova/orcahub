@@ -17,3 +17,8 @@ type CreateVolumeOptions struct {
 	DriverOpts map[string]string
 	Labels     map[string]string
 }
+
+type PruneResult struct {
+	Deleted        []string `json:"deleted"`
+	SpaceReclaimed int64    `json:"space_reclaimed"`
+}

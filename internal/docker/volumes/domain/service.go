@@ -11,4 +11,5 @@ type VolumeService interface {
 	Inspect(ctx context.Context, name string) (*model.Volume, error)
 	Create(ctx context.Context, opts model.CreateVolumeOptions) (*model.Volume, error)
 	Delete(ctx context.Context, name string) error
+	Prune(ctx context.Context) (model.PruneResult, error)
 }

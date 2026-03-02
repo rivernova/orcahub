@@ -34,3 +34,7 @@ func (s *ImageServiceImpl) Pull(ctx context.Context, opts model.PullOptions) err
 func (s *ImageServiceImpl) Build(ctx context.Context, opts model.BuildOptions) (*model.BuildResult, error) {
 	return s.adapter.Build(ctx, opts)
 }
+
+func (s *ImageServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	return s.adapter.Prune(ctx)
+}
