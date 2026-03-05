@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import type { AppState, AppAction, Route, Env } from '@/types'
-import {
-  api,
-  getMockContainers, getMockImages, getMockVolumes, getMockNetworks
-} from '@/api/client'
+import { api } from '@/api/client'
 
-// ─── Initial State ────────────────────────────────────────────────────────────
 const initialState: AppState = {
   route:        'overview',
   theme:        (localStorage.getItem('oh_theme') as 'dark' | 'light') ?? 'dark',
@@ -18,27 +14,27 @@ const initialState: AppState = {
   volumes:      [],
   networks:     [],
   loading:      false,
+  error:        null,
 }
 
-// ─── Reducer ──────────────────────────────────────────────────────────────────
 function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SET_ROUTE':       return { ...state, route: action.payload }
-    case 'SET_THEME':       return { ...state, theme: action.payload }
-    case 'SET_ENV':         return { ...state, env: action.payload }
-    case 'SET_K8S':         return { ...state, k8sConnected: action.payload }
-    case 'TOGGLE_SIDEBAR':  return { ...state, sidebarOpen: !state.sidebarOpen }
-    case 'TOGGLE_AI':       return { ...state, aiOpen: !state.aiOpen }
-    case 'SET_CONTAINERS':  return { ...state, containers: action.payload }
-    case 'SET_IMAGES':      return { ...state, images: action.payload }
-    case 'SET_VOLUMES':     return { ...state, volumes: action.payload }
-    case 'SET_NETWORKS':    return { ...state, networks: action.payload }
-    case 'SET_LOADING':     return { ...state, loading: action.payload }
-    default:                return state
+    case 'SET_ROUTE':      return { ...state, route: action.payload }
+    case 'SET_THEME':      return { ...state, theme: action.payload }
+    case 'SET_ENV':        return { ...state, env: action.payload }
+    case 'SET_K8S':        return { ...state, k8sConnected: action.payload }
+    case 'TOGGLE_SIDEBAR': return { ...state, sidebarOpen: !state.sidebarOpen }
+    case 'TOGGLE_AI':      return { ...state, aiOpen: !state.aiOpen }
+    case 'SET_CONTAINERS': return { ...state, containers: action.payload }
+    case 'SET_IMAGES':     return { ...state, images: action.payload }
+    case 'SET_VOLUMES':    return { ...state, volumes: action.payload }
+    case 'SET_NETWORKS':   return { ...state, networks: action.payload }
+    case 'SET_LOADING':    return { ...state, loading: action.payload }
+    case 'SET_ERROR':      return { ...state, error: action.payload }
+    default:               return state
   }
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
 interface AppContextValue {
   state:    AppState
   dispatch: React.Dispatch<AppAction>
@@ -49,7 +45,6 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-// ─── Toast system (simple global) ────────────────────────────────────────────
 type ToastItem = { id: string; msg: string; type: 'success' | 'error' | 'info' }
 const toastListeners: ((t: ToastItem) => void)[] = []
 export function emitToast(item: ToastItem) { toastListeners.forEach(fn => fn(item)) }
@@ -58,17 +53,14 @@ export function onToast(fn: (t: ToastItem) => void) {
   return () => { const i = toastListeners.indexOf(fn); if (i !== -1) toastListeners.splice(i, 1) }
 }
 
-// ─── Provider ────────────────────────────────────────────────────────────────
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState)
 
-  // Persist theme
   useEffect(() => {
     document.documentElement.className = state.theme === 'light' ? 'light' : ''
     localStorage.setItem('oh_theme', state.theme)
   }, [state.theme])
 
-  // Persist env
   useEffect(() => {
     localStorage.setItem('oh_env', state.env)
   }, [state.env])
@@ -83,21 +75,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const loadAll = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true })
-    try {
-      const ctrs = await api.containers.list().catch(() => getMockContainers())
-      dispatch({ type: 'SET_CONTAINERS', payload: ctrs })
-      const imgs = await api.images.list().catch(() => getMockImages())
-      dispatch({ type: 'SET_IMAGES', payload: imgs })
-      const vols = await api.volumes.list().catch(() => getMockVolumes())
-      dispatch({ type: 'SET_VOLUMES', payload: vols })
-      const nets = await api.networks.list().catch(() => getMockNetworks())
-      dispatch({ type: 'SET_NETWORKS', payload: nets })
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
+
+    const [ctrs, imgs, vols, nets] = await Promise.allSettled([
+      api.containers.list(),
+      api.images.list(),
+      api.volumes.list(),
+      api.networks.list(),
+    ])
+
+    // Only update state on success — existing data stays visible on failure (no glitch)
+    if (ctrs.status === 'fulfilled') dispatch({ type: 'SET_CONTAINERS', payload: ctrs.value })
+    if (imgs.status === 'fulfilled') dispatch({ type: 'SET_IMAGES',     payload: imgs.value })
+    if (vols.status === 'fulfilled') dispatch({ type: 'SET_VOLUMES',    payload: vols.value })
+    if (nets.status === 'fulfilled') dispatch({ type: 'SET_NETWORKS',   payload: nets.value })
+
+    const anyFailed = [ctrs, imgs, vols, nets].some(r => r.status === 'rejected')
+    if (anyFailed) dispatch({ type: 'SET_ERROR', payload: 'Some resources could not be loaded' })
+    else           dispatch({ type: 'SET_ERROR', payload: null })
+
+    dispatch({ type: 'SET_LOADING', payload: false })
   }, [])
 
-  // Initial load + env detection
   useEffect(() => {
     loadAll()
     api.system.detect()
@@ -108,7 +106,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch(() => {})
-    // Refresh every 10s
     const interval = setInterval(loadAll, 10_000)
     return () => clearInterval(interval)
   }, [loadAll])

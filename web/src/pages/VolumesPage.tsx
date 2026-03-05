@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useApp } from '@/context/AppContext'
-import { PageHeader, SectionHeader, TableWrap } from '@/components/orcahub/PageHeader'
+import { PageHeader, SectionHeader } from '@/components/orcahub/PageHeader'
+import { EmptyTableRow, ErrorBanner } from '@/components/orcahub/EmptyState'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Input, Label } from '@/components/ui/form'
 import { api } from '@/api/client'
@@ -14,45 +17,29 @@ export function VolumesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [volName, setVolName]       = useState('')
   const [creating, setCreating]     = useState(false)
-
   const volumes = state.volumes
 
   const pruneVolumes = async () => {
     if (!window.confirm('Remove all unused volumes? This action cannot be undone.')) return
-    try {
-      await api.volumes.prune()
-      await loadAll()
-      toast('Unused volumes pruned', 'success')
-    } catch {
-      toast('Prune failed', 'error')
-    }
+    try { await api.volumes.prune(); await loadAll(); toast('Unused volumes pruned', 'success') }
+    catch { toast('Prune failed', 'error') }
   }
 
   const deleteVolume = async (name: string) => {
     if (!window.confirm(`Delete volume "${name}"? All data will be lost.`)) return
-    try {
-      await api.volumes.delete(name)
-      await loadAll()
-      toast('Volume deleted', 'success')
-    } catch {
-      toast('Delete failed — volume may be in use', 'error')
-    }
+    try { await api.volumes.delete(name); await loadAll(); toast('Volume deleted', 'success') }
+    catch { toast('Delete failed — volume may be in use', 'error') }
   }
 
   const createVolume = async () => {
     if (!volName.trim()) return
     setCreating(true)
     try {
-      await api.volumes.create(volName.trim())
-      await loadAll()
+      await api.volumes.create(volName.trim()); await loadAll()
       toast(`Volume "${volName}" created`, 'success')
-      setCreateOpen(false)
-      setVolName('')
-    } catch {
-      toast('Create failed', 'error')
-    } finally {
-      setCreating(false)
-    }
+      setCreateOpen(false); setVolName('')
+    } catch { toast('Create failed', 'error') }
+    finally { setCreating(false) }
   }
 
   return (
@@ -62,91 +49,73 @@ export function VolumesPage() {
         sub="Persistent data storage management"
         actions={
           <>
-            <Button variant="ghost" size="sm" onClick={pruneVolumes}>
-              <Trash className="w-3 h-3" /> Prune unused
-            </Button>
-            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="w-3 h-3" /> Create volume
-            </Button>
+            <Button variant="ghost" size="sm" onClick={pruneVolumes}><Trash className="w-3 h-3" /> Prune unused</Button>
+            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}><Plus className="w-3 h-3" /> Create volume</Button>
           </>
         }
       />
 
+      {state.error && <ErrorBanner message={state.error} onRetry={loadAll} />}
       <SectionHeader title="Volumes" count={volumes.length} />
 
-      <TableWrap>
-        <table className="orca-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Driver</th>
-              <th>Mount point</th>
-              <th>Size</th>
-              <th>Containers</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {volumes.map(v => (
-              <tr key={v.name}>
-                <td>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-[9px] bg-[var(--bg-raised)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
-                      <HardDrive className="w-4 h-4 text-[var(--text-muted)]" />
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Driver</TableHead>
+              <TableHead>Mount point</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Containers</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {volumes.length === 0 ? (
+              <EmptyTableRow cols={7} icon="💾" title={state.loading ? 'Loading volumes…' : 'No volumes'} description={state.loading ? undefined : 'Create a volume to persist data'} />
+            ) : (
+              volumes.map(v => (
+                <TableRow key={v.name}>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-[9px] bg-[var(--bg-raised)] border border-[var(--border)] flex items-center justify-center flex-shrink-0">
+                        <HardDrive className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                      </div>
+                      <span className="font-medium text-[13px] text-[var(--text-primary)]">{v.name}</span>
                     </div>
-                    <span className="font-medium text-[13px]">{v.name}</span>
-                  </div>
-                </td>
-                <td>
-                  <span className="font-mono text-[11.5px] text-[var(--text-secondary)]">{v.driver}</span>
-                </td>
-                <td>
-                  <span className="font-mono text-[11px] text-[var(--text-muted)] max-w-[220px] truncate block" title={v.mountpoint}>
-                    {v.mountpoint}
-                  </span>
-                </td>
-                <td>
-                  <span className={cn('font-mono text-[11.5px]', v.size_bytes > 0 ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]')}>
-                    {v.size_bytes > 0 ? formatBytes(v.size_bytes) : '—'}
-                  </span>
-                </td>
-                <td>
-                  {v.used_by?.length > 0 ? (
-                    <span className="text-[11.5px] text-[#10d98a]">{v.used_by.join(', ')}</span>
-                  ) : (
-                    <span className="text-[11.5px] text-[var(--text-muted)] italic">unused</span>
-                  )}
-                </td>
-                <td>
-                  <span className="text-[11.5px] text-[var(--text-muted)]">
-                    {v.created_at ? new Date(v.created_at).toLocaleDateString() : '—'}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    onClick={() => deleteVolume(v.name)}
-                    disabled={v.used_by?.length > 0}
-                    title={v.used_by?.length > 0 ? 'In use by containers' : 'Delete volume'}
-                    className="w-7 h-7 flex items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] hover:bg-[rgba(239,68,68,0.12)] hover:border-[rgba(239,68,68,0.25)] hover:text-[#ef4444] transition-all disabled:opacity-25 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {volumes.length === 0 && (
-              <tr>
-                <td colSpan={7} className="text-center py-14 text-[var(--text-muted)]">
-                  <div className="text-4xl mb-3 opacity-30">💾</div>
-                  <div className="text-[15px] font-semibold text-[var(--text-secondary)] mb-1">No volumes</div>
-                  <div className="text-[12.5px]">Create a volume to persist data</div>
-                </td>
-              </tr>
+                  </TableCell>
+                  <TableCell><span className="font-mono text-[11.5px]">{v.driver}</span></TableCell>
+                  <TableCell>
+                    <span className="font-mono text-[11px] text-[var(--text-muted)] max-w-[220px] truncate block" title={v.mountpoint}>{v.mountpoint}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={cn('font-mono text-[11.5px]', v.size_bytes > 0 ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]')}>
+                      {v.size_bytes > 0 ? formatBytes(v.size_bytes) : '—'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {v.used_by?.length > 0
+                      ? <span className="text-[11.5px] text-[#10d98a]">{v.used_by.join(', ')}</span>
+                      : <span className="text-[11.5px] text-[var(--text-muted)] italic">unused</span>
+                    }
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-[11.5px]">{v.created_at ? new Date(v.created_at).toLocaleDateString() : '—'}</span>
+                  </TableCell>
+                  <TableCell>
+                    <button onClick={() => deleteVolume(v.name)} disabled={v.used_by?.length > 0}
+                      title={v.used_by?.length > 0 ? 'In use by containers' : 'Delete volume'}
+                      className="w-7 h-7 flex items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] hover:bg-[rgba(239,68,68,0.12)] hover:border-[rgba(239,68,68,0.25)] hover:text-[#ef4444] transition-all disabled:opacity-25 disabled:cursor-not-allowed">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
-          </tbody>
-        </table>
-      </TableWrap>
+          </TableBody>
+        </Table>
+      </Card>
 
       <Dialog open={createOpen} onOpenChange={v => !v && setCreateOpen(false)}>
         <DialogContent>
@@ -156,14 +125,8 @@ export function VolumesPage() {
           </DialogHeader>
           <div>
             <Label htmlFor="volName">Volume name</Label>
-            <Input
-              id="volName"
-              value={volName}
-              onChange={e => setVolName(e.target.value)}
-              placeholder="my-volume-data"
-              onKeyDown={e => e.key === 'Enter' && createVolume()}
-              autoFocus
-            />
+            <Input id="volName" value={volName} onChange={e => setVolName(e.target.value)}
+              placeholder="my-volume-data" onKeyDown={e => e.key === 'Enter' && createVolume()} autoFocus />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>

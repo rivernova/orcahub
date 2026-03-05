@@ -1,5 +1,3 @@
-// ─── Container Types ────────────────────────────────────────────────────────
-
 export interface Port {
   private_port: number
   public_port:  number
@@ -62,46 +60,40 @@ export interface ContainerStats {
   pids:           number
 }
 
-// ─── Image Types ─────────────────────────────────────────────────────────────
-
 export interface DockerImage {
-  id:          string
-  repo_tags:   string[]
-  repo_digests:string[]
-  size:        number
-  virtual_size:number
-  created:     number
-  labels:      Record<string, string>
-  used_by:     string[]
+  id:           string
+  repo_tags:    string[]
+  repo_digests: string[]
+  size:         number
+  virtual_size: number
+  created:      number
+  labels:       Record<string, string>
+  used_by:      string[]
 }
-
-// ─── Volume Types ─────────────────────────────────────────────────────────────
 
 export interface Volume {
-  name:        string
-  driver:      string
-  mountpoint:  string
-  scope:       string
-  created_at:  string
-  labels:      Record<string, string>
-  options:     Record<string, string>
-  used_by:     string[]
-  size_bytes:  number
-}
-
-// ─── Network Types ────────────────────────────────────────────────────────────
-
-export interface Network {
-  id:         string
   name:       string
   driver:     string
+  mountpoint: string
   scope:      string
-  internal:   boolean
-  ipam_config:IPAMConfig[]
-  containers: Record<string, NetworkContainerInfo>
+  created_at: string
   labels:     Record<string, string>
-  created:    string
-  enable_ipv6:boolean
+  options:    Record<string, string>
+  used_by:    string[]
+  size_bytes: number
+}
+
+export interface Network {
+  id:          string
+  name:        string
+  driver:      string
+  scope:       string
+  internal:    boolean
+  ipam_config: IPAMConfig[]
+  containers:  Record<string, NetworkContainerInfo>
+  labels:      Record<string, string>
+  created:     string
+  enable_ipv6: boolean
 }
 
 export interface IPAMConfig {
@@ -110,13 +102,11 @@ export interface IPAMConfig {
 }
 
 export interface NetworkContainerInfo {
-  name:        string
-  mac_address: string
-  ipv4_address:string
-  ipv6_address:string
+  name:         string
+  mac_address:  string
+  ipv4_address: string
+  ipv6_address: string
 }
-
-// ─── Exec / Terminal ──────────────────────────────────────────────────────────
 
 export interface ExecRequest {
   command:       string[]
@@ -128,8 +118,6 @@ export interface ExecResponse {
   output:    string
   exit_code: number
 }
-
-// ─── App State ────────────────────────────────────────────────────────────────
 
 export type Env = 'docker' | 'k8s'
 
@@ -160,25 +148,19 @@ export interface AppState {
   volumes:      Volume[]
   networks:     Network[]
   loading:      boolean
+  error:        string | null
 }
 
 export type AppAction =
-  | { type: 'SET_ROUTE';       payload: Route }
-  | { type: 'SET_THEME';       payload: 'dark' | 'light' }
-  | { type: 'SET_ENV';         payload: Env }
-  | { type: 'SET_K8S';         payload: boolean }
+  | { type: 'SET_ROUTE';      payload: Route }
+  | { type: 'SET_THEME';      payload: 'dark' | 'light' }
+  | { type: 'SET_ENV';        payload: Env }
+  | { type: 'SET_K8S';        payload: boolean }
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'TOGGLE_AI' }
-  | { type: 'SET_CONTAINERS';  payload: Container[] }
-  | { type: 'SET_IMAGES';      payload: DockerImage[] }
-  | { type: 'SET_VOLUMES';     payload: Volume[] }
-  | { type: 'SET_NETWORKS';    payload: Network[] }
-  | { type: 'SET_LOADING';     payload: boolean }
-
-// ─── Mock helpers ─────────────────────────────────────────────────────────────
-
-export interface MetricPoint {
-  ts:  number
-  cpu: number
-  mem: number
-}
+  | { type: 'SET_CONTAINERS'; payload: Container[] }
+  | { type: 'SET_IMAGES';     payload: DockerImage[] }
+  | { type: 'SET_VOLUMES';    payload: Volume[] }
+  | { type: 'SET_NETWORKS';   payload: Network[] }
+  | { type: 'SET_LOADING';    payload: boolean }
+  | { type: 'SET_ERROR';      payload: string | null }

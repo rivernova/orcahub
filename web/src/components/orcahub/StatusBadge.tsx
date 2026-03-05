@@ -1,38 +1,22 @@
-import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+
+type State = 'running' | 'exited' | 'paused' | 'stopped' | string
 
 interface StatusBadgeProps {
-  state: string
-  className?: string
+  state: State
 }
 
-export function StatusBadge({ state, className }: StatusBadgeProps) {
-  const s = state.toLowerCase()
-  const isRunning = s === 'running'
-  const isExited  = s === 'exited'
-  const isPaused  = s === 'paused'
+function getVariant(state: string): 'running' | 'exited' | 'paused' | 'stopped' {
+  if (state === 'running') return 'running'
+  if (state === 'exited')  return 'exited'
+  if (state === 'paused')  return 'paused'
+  return 'stopped'
+}
 
+export function StatusBadge({ state }: StatusBadgeProps) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full',
-        'text-[10px] font-bold tracking-[.04em] uppercase',
-        isRunning && 'pill-running',
-        isExited  && 'pill-exited',
-        isPaused  && 'pill-paused',
-        !isRunning && !isExited && !isPaused && 'pill-stopped',
-        className
-      )}
-    >
-      <span
-        className={cn(
-          'w-[5.5px] h-[5.5px] rounded-full flex-shrink-0',
-          isRunning && 'bg-[#10d98a] shadow-[0_0_5px_#10d98a] animate-pdot',
-          isExited  && 'bg-[#ef4444]',
-          isPaused  && 'bg-[#f59e0b]',
-          !isRunning && !isExited && !isPaused && 'bg-[var(--text-muted)]',
-        )}
-      />
-      {s}
-    </span>
+    <Badge variant={getVariant(state)} dot>
+      {state}
+    </Badge>
   )
 }

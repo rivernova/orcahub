@@ -1,31 +1,30 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '@/context/AppContext'
-import { PageHeader, SectionHeader, TableWrap } from '@/components/orcahub/PageHeader'
+import { PageHeader, SectionHeader } from '@/components/orcahub/PageHeader'
 import { StatusBadge } from '@/components/orcahub/StatusBadge'
 import { ExecDialog } from '@/components/orcahub/ExecDialog'
 import { LogsDialog } from '@/components/orcahub/LogsDialog'
+import { EmptyTableRow, ErrorBanner } from '@/components/orcahub/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { Card } from '@/components/ui/card'
 import { api } from '@/api/client'
-import { formatUptime, formatBytes, shortId, formatPorts } from '@/lib/utils'
+import { formatUptime, shortId, formatPorts } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import {
-  Play, Square, RotateCcw, Trash2, Terminal, FileText, Info,
-  Plus, Trash,
-} from 'lucide-react'
+import { Play, Square, RotateCcw, Trash2, Terminal, FileText, Info, Plus, Trash } from 'lucide-react'
 import type { Container } from '@/types'
 
 type ContainerFilter = 'all' | 'running' | 'stopped' | 'exited'
-
-interface ExecState  { open: boolean; id: string; name: string }
-interface LogsState  { open: boolean; id: string; name: string }
+interface ExecState { open: boolean; id: string; name: string }
+interface LogsState { open: boolean; id: string; name: string }
 
 export function ContainersPage() {
   const { state, loadAll, toast } = useApp()
-  const [filter, setFilter]     = useState<ContainerFilter>('all')
-  const [exec, setExec]         = useState<ExecState>({ open: false, id: '', name: '' })
-  const [logs, setLogs]         = useState<LogsState>({ open: false, id: '', name: '' })
-  const [busy, setBusy]         = useState<Record<string, boolean>>({})
+  const [filter, setFilter] = useState<ContainerFilter>('all')
+  const [exec, setExec]     = useState<ExecState>({ open: false, id: '', name: '' })
+  const [logs, setLogs]     = useState<LogsState>({ open: false, id: '', name: '' })
+  const [busy, setBusy]     = useState<Record<string, boolean>>({})
 
   const containers = state.containers
 
@@ -60,7 +59,6 @@ export function ContainersPage() {
   const pruneContainers = async () => {
     if (!window.confirm('Remove all stopped containers?')) return
     try {
-      // Prune via delete all stopped
       await Promise.all(
         containers.filter(c => c.state !== 'running').map(c => api.containers.delete(c.id))
       )
@@ -88,6 +86,8 @@ export function ContainersPage() {
         }
       />
 
+      {state.error && <ErrorBanner message={state.error} onRetry={loadAll} />}
+
       <SectionHeader
         title="All containers"
         count={filtered.length}
@@ -103,43 +103,41 @@ export function ContainersPage() {
         }
       />
 
-      <TableWrap>
-        <table className="orca-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Image</th>
-              <th>Status</th>
-              <th>CPU</th>
-              <th>Memory</th>
-              <th>Ports</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(c => (
-              <ContainerRow
-                key={c.id}
-                container={c}
-                loading={!!busy[c.id]}
-                onAction={act}
-                onExec={(id, name) => setExec({ open: true, id, name })}
-                onLogs={(id, name) => setLogs({ open: true, id, name })}
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Image</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Ports</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.length === 0 ? (
+              <EmptyTableRow
+                cols={6}
+                icon="📦"
+                title={state.loading ? 'Loading containers…' : 'No containers'}
+                description={state.loading ? undefined : 'No containers match the current filter'}
               />
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} className="text-center py-14 text-[var(--text-muted)]">
-                  <div className="text-4xl mb-3 opacity-30">📦</div>
-                  <div className="text-[15px] font-semibold text-[var(--text-secondary)] mb-1">No containers</div>
-                  <div className="text-[12.5px]">Deploy a container to get started</div>
-                </td>
-              </tr>
+            ) : (
+              filtered.map(c => (
+                <ContainerRow
+                  key={c.id}
+                  container={c}
+                  loading={!!busy[c.id]}
+                  onAction={act}
+                  onExec={(id, name) => setExec({ open: true, id, name })}
+                  onLogs={(id, name) => setLogs({ open: true, id, name })}
+                />
+              ))
             )}
-          </tbody>
-        </table>
-      </TableWrap>
+          </TableBody>
+        </Table>
+      </Card>
 
       <ExecDialog
         open={exec.open}
@@ -147,7 +145,6 @@ export function ContainersPage() {
         containerId={exec.id}
         containerName={exec.name}
       />
-
       <LogsDialog
         open={logs.open}
         onClose={() => setLogs(l => ({ ...l, open: false }))}
@@ -168,59 +165,32 @@ function ContainerRow({
   onLogs:    (id: string, name: string) => void
 }) {
   const isRunning = c.state === 'running'
-  const name      = c.name.replace(/^\//, '')
-  const cpuMock   = isRunning ? (Math.random() * 25 + 2).toFixed(1) : '0.0'
-  const memMock   = isRunning ? formatBytes(Math.floor(Math.random() * 400 + 50) * 1024 * 1024) : '—'
+  const name = c.name.replace(/^\//, '')
 
   return (
-    <tr className={cn(loading && 'opacity-50')}>
-      {/* Name */}
-      <td>
+    <TableRow className={cn(loading && 'opacity-50')}>
+      <TableCell>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-[7px] bg-[var(--bg-raised)] border border-[var(--border)] flex items-center justify-center text-xs flex-shrink-0">
             📦
           </div>
           <div>
-            <div className="font-medium text-[13px]">{name}</div>
+            <div className="font-semibold text-[13px] text-[var(--text-primary)]">{name}</div>
             <div className="font-mono text-[10.5px] text-[var(--text-muted)]">{shortId(c.id)}</div>
           </div>
         </div>
-      </td>
-
-      {/* Image */}
-      <td>
-        <div className="font-mono text-[11.5px] text-[var(--text-secondary)] max-w-[160px] truncate">{c.image}</div>
-      </td>
-
-      {/* Status */}
-      <td><StatusBadge state={c.state} /></td>
-
-      {/* CPU */}
-      <td>
-        <span className={cn('font-mono text-[11.5px]', isRunning ? 'text-[#00d4ff]' : 'text-[var(--text-muted)]')}>
-          {cpuMock}%
-        </span>
-      </td>
-
-      {/* Memory */}
-      <td>
-        <span className={cn('font-mono text-[11.5px]', isRunning ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]')}>
-          {memMock}
-        </span>
-      </td>
-
-      {/* Ports */}
-      <td>
-        <span className="font-mono text-[11px] text-[var(--text-muted)]">{formatPorts(c.ports)}</span>
-      </td>
-
-      {/* Created */}
-      <td>
-        <span className="text-[11.5px] text-[var(--text-muted)]">{formatUptime(c.created)} ago</span>
-      </td>
-
-      {/* Actions */}
-      <td>
+      </TableCell>
+      <TableCell>
+        <span className="font-mono text-[11.5px] max-w-[160px] truncate block">{c.image}</span>
+      </TableCell>
+      <TableCell><StatusBadge state={c.state} /></TableCell>
+      <TableCell>
+        <span className="font-mono text-[11px] text-[var(--text-muted)]">{formatPorts(c.ports) || '—'}</span>
+      </TableCell>
+      <TableCell>
+        <span className="text-[11.5px]">{formatUptime(c.created)} ago</span>
+      </TableCell>
+      <TableCell>
         <div className="flex items-center gap-1">
           {isRunning ? (
             <>
@@ -236,33 +206,31 @@ function ContainerRow({
               <Play className="w-3 h-3" />
             </ActionBtn>
           )}
-          <ActionBtn title="Exec (Terminal)" onClick={() => onExec(c.id, name)} disabled={!isRunning}>
+          <ActionBtn title="Exec" onClick={() => onExec(c.id, name)} disabled={!isRunning}>
             <Terminal className="w-3 h-3" />
           </ActionBtn>
           <ActionBtn title="Logs" onClick={() => onLogs(c.id, name)}>
             <FileText className="w-3 h-3" />
           </ActionBtn>
-          <ActionBtn title="Inspect" onClick={() => {}} >
+          <ActionBtn title="Inspect" onClick={() => {}}>
             <Info className="w-3 h-3" />
           </ActionBtn>
           <ActionBtn title="Delete" onClick={() => onAction(c.id, 'delete')} disabled={loading} danger>
             <Trash2 className="w-3 h-3" />
           </ActionBtn>
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
-function ActionBtn({
-  children, title, onClick, disabled = false, danger = false, success = false,
-}: {
-  children: React.ReactNode
-  title:    string
-  onClick:  () => void
+function ActionBtn({ children, title, onClick, disabled = false, danger = false, success = false }: {
+  children:  React.ReactNode
+  title:     string
+  onClick:   () => void
   disabled?: boolean
-  danger?:  boolean
-  success?: boolean
+  danger?:   boolean
+  success?:  boolean
 }) {
   return (
     <button
