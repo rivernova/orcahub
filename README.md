@@ -1,6 +1,11 @@
-![OrcaHub](web/frontend/public/favicon.svg)
-
 # OrcaHub
+### The AI-powered control plane for Docker & Kubernetes.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/rivernova/orcahub/main/web/public/favicon.svg" width="150" />
+</p>
+
+# About
 
 ## Unified Dashboard for Docker & Kubernetes
 
