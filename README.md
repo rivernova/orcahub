@@ -20,7 +20,7 @@ This repository is a **monorepo** containing the full OrcaHub application:
 ---
 
 ## 🌟 Features
-º
+
 ### 🐳 Docker Management
 
 - List, inspect, and filter containers, images, volumes, and networks
