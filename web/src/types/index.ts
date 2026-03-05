@@ -1,109 +1,184 @@
-export interface Container {
-  id: string
-  name: string
-  image: string
-  image_id: string
-  state: string
-  status: string
-  created: number
-  ports: Port[]
-  mounts: Mount[]
-  labels: Record<string, string>
-  network_mode: string
-  restart_policy: string
-  env: string[]
-  cmd: string[]
-  networks: Record<string, NetworkEndpoint>
-  started_at: string
-  finished_at: string
-  exit_code: number
-}
+// ─── Container Types ────────────────────────────────────────────────────────
 
 export interface Port {
   private_port: number
-  public_port: number
-  type: string
-  ip: string
+  public_port:  number
+  type:         string
+  ip:           string
 }
 
 export interface Mount {
-  type: string
-  source: string
+  type:        string
+  source:      string
   destination: string
-  mode: string
-  rw: boolean
+  mode:        string
+  rw:          boolean
+}
+
+export interface Container {
+  id:             string
+  name:           string
+  image:          string
+  image_id:       string
+  status:         string
+  state:          string
+  created:        number
+  ports:          Port[]
+  labels:         Record<string, string>
+  mounts:         Mount[]
+  network_mode:   string
+  restart_policy: string
+}
+
+export interface ContainerInspect extends Container {
+  hostname:    string
+  env:         string[]
+  cmd:         string[]
+  entrypoint:  string[]
+  working_dir: string
+  user:        string
+  networks:    Record<string, NetworkEndpoint>
+  started_at:  string
+  finished_at: string
+  exit_code:   number
 }
 
 export interface NetworkEndpoint {
-  network_id: string
-  ip_address: string
-  gateway: string
+  network_id:  string
+  ip_address:  string
+  gateway:     string
   mac_address: string
 }
 
 export interface ContainerStats {
-  cpu_percent: number
-  memory_usage: number
-  memory_limit: number
+  cpu_percent:    number
+  memory_usage:   number
+  memory_limit:   number
   memory_percent: number
-  network_in: number
-  network_out: number
-  block_read: number
-  block_write: number
-  pids: number
+  network_in:     number
+  network_out:    number
+  block_read:     number
+  block_write:    number
+  pids:           number
 }
 
-export interface Image {
-  id: string
-  tags: string[]
-  size: number
-  created: number
-  labels: Record<string, string>
-  containers: number
-  architecture?: string
-  os?: string
+// ─── Image Types ─────────────────────────────────────────────────────────────
+
+export interface DockerImage {
+  id:          string
+  repo_tags:   string[]
+  repo_digests:string[]
+  size:        number
+  virtual_size:number
+  created:     number
+  labels:      Record<string, string>
+  used_by:     string[]
 }
+
+// ─── Volume Types ─────────────────────────────────────────────────────────────
 
 export interface Volume {
-  name: string
-  driver: string
-  mountpoint: string
-  created_at?: string
-  labels: Record<string, string>
-  scope: string
-  size?: number
+  name:        string
+  driver:      string
+  mountpoint:  string
+  scope:       string
+  created_at:  string
+  labels:      Record<string, string>
+  options:     Record<string, string>
+  used_by:     string[]
+  size_bytes:  number
 }
+
+// ─── Network Types ────────────────────────────────────────────────────────────
 
 export interface Network {
-  id: string
-  name: string
-  driver: string
-  scope: string
-  internal: boolean
-  attachable: boolean
-  created: string
-  subnet?: string
-  gateway?: string
-  containers: Record<string, NetworkContainer>
+  id:         string
+  name:       string
+  driver:     string
+  scope:      string
+  internal:   boolean
+  ipam_config:IPAMConfig[]
+  containers: Record<string, NetworkContainerInfo>
+  labels:     Record<string, string>
+  created:    string
+  enable_ipv6:boolean
 }
 
-export interface NetworkContainer {
-  name: string
-  ipv4_address: string
+export interface IPAMConfig {
+  subnet:  string
+  gateway: string
+}
+
+export interface NetworkContainerInfo {
+  name:        string
   mac_address: string
+  ipv4_address:string
+  ipv6_address:string
 }
 
-export interface SystemStatus {
-  docker: { available: boolean; version?: string; error?: string }
-  kubernetes: { available: boolean; context?: string; server_info?: string; error?: string }
+// ─── Exec / Terminal ──────────────────────────────────────────────────────────
+
+export interface ExecRequest {
+  command:       string[]
+  attach_stdout: boolean
+  attach_stderr: boolean
 }
 
-export interface ExecResult {
-  output: string
+export interface ExecResponse {
+  output:    string
   exit_code: number
 }
 
-export interface PruneResult {
-  deleted: string[]
-  space_reclaimed: number
+// ─── App State ────────────────────────────────────────────────────────────────
+
+export type Env = 'docker' | 'k8s'
+
+export type Route =
+  | 'overview'
+  | 'containers'
+  | 'images'
+  | 'volumes'
+  | 'networks'
+  | 'metrics'
+  | 'compose'
+  | 'settings'
+  | 'k8s-overview'
+  | 'k8s-pods'
+  | 'k8s-deployments'
+  | 'k8s-services'
+  | 'k8s-namespaces'
+
+export interface AppState {
+  route:        Route
+  theme:        'dark' | 'light'
+  env:          Env
+  k8sConnected: boolean
+  sidebarOpen:  boolean
+  aiOpen:       boolean
+  containers:   Container[]
+  images:       DockerImage[]
+  volumes:      Volume[]
+  networks:     Network[]
+  loading:      boolean
+}
+
+export type AppAction =
+  | { type: 'SET_ROUTE';       payload: Route }
+  | { type: 'SET_THEME';       payload: 'dark' | 'light' }
+  | { type: 'SET_ENV';         payload: Env }
+  | { type: 'SET_K8S';         payload: boolean }
+  | { type: 'TOGGLE_SIDEBAR' }
+  | { type: 'TOGGLE_AI' }
+  | { type: 'SET_CONTAINERS';  payload: Container[] }
+  | { type: 'SET_IMAGES';      payload: DockerImage[] }
+  | { type: 'SET_VOLUMES';     payload: Volume[] }
+  | { type: 'SET_NETWORKS';    payload: Network[] }
+  | { type: 'SET_LOADING';     payload: boolean }
+
+// ─── Mock helpers ─────────────────────────────────────────────────────────────
+
+export interface MetricPoint {
+  ts:  number
+  cpu: number
+  mem: number
 }

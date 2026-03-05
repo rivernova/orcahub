@@ -4,9 +4,13 @@ import (
 	"log"
 	"os"
 
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 	containeradapter "github.com/rivernova/orcahub/internal/docker/containers/adapter"
 	containerapi "github.com/rivernova/orcahub/internal/docker/containers/api"
 	containerdomain "github.com/rivernova/orcahub/internal/docker/containers/domain"
+	"github.com/rivernova/orcahub/web"
 
 	imageadapter "github.com/rivernova/orcahub/internal/docker/images/adapter"
 	imageapi "github.com/rivernova/orcahub/internal/docker/images/api"
@@ -68,8 +72,16 @@ func main() {
 		System:     systemHandler,
 	})
 
-	port := getPort()
+	// Frontend embebido
+	fileServer := http.FileServer(web.FS())
+	r.NoRoute(func(c *gin.Context) {
+		if _, err := web.FS().Open(c.Request.URL.Path); err != nil {
+			c.Request.URL.Path = "/"
+		}
+		fileServer.ServeHTTP(c.Writer, c.Request)
+	})
 
+	port := getPort()
 	log.Println("Starting OrcaHub server on :" + port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("failed to start server: %v", err)

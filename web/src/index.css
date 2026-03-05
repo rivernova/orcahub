@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════
+   ORCAHUB THEME VARIABLES
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg-void:       #050508;
+  --bg-deep:       #080b12;
+  --bg-surface:    #0d1120;
+  --bg-raised:     #111827;
+  --bg-elevated:   #151f32;
+  --bg-glass:      rgba(255,255,255,0.035);
+  --bg-glass-hover:rgba(255,255,255,0.06);
+  --border:        rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.15);
+  --border-focus:  rgba(0,212,255,0.4);
+  --text-primary:  #f0f4ff;
+  --text-secondary:rgba(240,244,255,0.55);
+  --text-muted:    rgba(240,244,255,0.28);
+  --shadow-card:   0 4px 24px rgba(0,0,0,0.35);
+  --shadow-hover:  0 12px 40px rgba(0,0,0,0.45);
+  --shadow-modal:  0 32px 80px rgba(0,0,0,0.6);
+  --table-stripe:  rgba(255,255,255,0.02);
+  --table-hover:   rgba(255,255,255,0.04);
+  --input-bg:      #111827;
+  --scrollbar:     rgba(255,255,255,0.08);
+  --accent:        #00d4ff;
+  --accent-dim:    rgba(0,212,255,0.15);
+  --accent-glow:   rgba(0,212,255,0.2);
+  --accent-purple: #7c3aed;
+  --accent-green:  #10d98a;
+  --accent-green-dim: rgba(16,217,138,0.15);
+  --accent-amber:  #f59e0b;
+  --accent-amber-dim: rgba(245,158,11,0.12);
+  --accent-red:    #ef4444;
+  --accent-red-dim:rgba(239,68,68,0.12);
+  --ease: cubic-bezier(0.4,0,0.2,1);
+  --t: all 0.22s var(--ease);
+}
+
+.light {
+  --bg-void:       #f0f2f7;
+  --bg-deep:       #e8ecf4;
+  --bg-surface:    #ffffff;
+  --bg-raised:     #f4f6fb;
+  --bg-elevated:   #eef1f8;
+  --bg-glass:      rgba(0,0,0,0.03);
+  --bg-glass-hover:rgba(0,0,0,0.055);
+  --border:        rgba(0,0,0,0.08);
+  --border-bright: rgba(0,0,0,0.16);
+  --border-focus:  rgba(0,170,200,0.5);
+  --text-primary:  #0f172a;
+  --text-secondary:rgba(15,23,42,0.6);
+  --text-muted:    rgba(15,23,42,0.35);
+  --shadow-card:   0 2px 12px rgba(0,0,0,0.07);
+  --shadow-hover:  0 8px 28px rgba(0,0,0,0.12);
+  --shadow-modal:  0 24px 60px rgba(0,0,0,0.18);
+  --table-stripe:  rgba(0,0,0,0.02);
+  --table-hover:   rgba(0,0,0,0.035);
+  --input-bg:      #f4f6fb;
+  --scrollbar:     rgba(0,0,0,0.12);
+  --accent-dim:    rgba(0,170,200,0.15);
+  --accent-glow:   rgba(0,170,200,0.2);
+  --border-focus:  rgba(0,170,200,0.5);
+}
+
+/* ═══ RESETS ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Outfit', sans-serif; background: var(--bg-void); color: var(--text-primary); overflow: hidden; -webkit-font-smoothing: antialiased; }
+#root { height: 100%; }
+button { font-family: 'Outfit', sans-serif; cursor: pointer; }
+input, textarea, select { font-family: 'Outfit', sans-serif; }
+a { color: inherit; text-decoration: none; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 99px; }
+
+/* ═══ UTILITY CLASSES ═══ */
+.font-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+/* ═══ PILL STATUS ═══ */
+.pill-running  { background: var(--accent-green-dim); color: var(--accent-green); }
+.pill-stopped  { background: var(--bg-glass); color: var(--text-muted); }
+.pill-exited   { background: var(--accent-red-dim); color: var(--accent-red); }
+.pill-paused   { background: var(--accent-amber-dim); color: var(--accent-amber); }
+
+/* ═══ TABLE ═══ */
+.orca-table { width: 100%; border-collapse: collapse; }
+.orca-table thead th {
+  padding: 10px 16px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--text-muted); text-align: left;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.orca-table thead th:first-child { padding-left: 18px; }
+.orca-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s; cursor: pointer;
+}
+.orca-table tbody tr:last-child { border-bottom: none; }
+.orca-table tbody tr:nth-child(even) { background: var(--table-stripe); }
+.orca-table tbody tr:hover { background: var(--table-hover); }
+.orca-table td { padding: 11px 16px; font-size: 12.5px; color: var(--text-primary); vertical-align: middle; }
+.orca-table td:first-child { padding-left: 18px; }
+
+/* ═══ STAT CARD SPARKLINE ═══ */
+.stat-sparkline-run { background: var(--accent-green); }
+.stat-sparkline-cpu { background: var(--accent); }
+
+/* ═══ CHART ═══ */
+.chart-line-cpu { fill: none; stroke: var(--accent); stroke-width: 2; }
+.chart-fill-cpu { fill: url(#cpu-grad); }
+.chart-line-mem { fill: none; stroke: var(--accent-green); stroke-width: 2; }
+.chart-fill-mem { fill: url(#mem-grad); }
+
+/* ═══ TERMINAL ═══ */
+.terminal-output {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #a8ff78;
+  padding: 14px 16px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+}
+.terminal-prompt { color: var(--accent); }
+.terminal-error  { color: var(--accent-red); }
+.terminal-sys    { color: var(--text-muted); font-style: italic; }
+
+/* ═══ LOG VIEWER ═══ */
+.log-line { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-secondary); padding: 1px 0; line-height: 1.65; }
+.log-line:hover { color: var(--text-primary); }
+.log-line .log-ts { color: var(--text-muted); margin-right: 8px; }
+.log-line .log-err { color: var(--accent-red); }
+.log-line .log-warn { color: var(--accent-amber); }
+
+/* ═══ ACTIVE NAV ═══ */
+.nav-active {
+  color: var(--accent) !important;
+  background: linear-gradient(90deg, rgba(0,212,255,0.07), transparent) !important;
+}
+.nav-active::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2.5px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes pdot { 0%,100% { opacity:1; transform:scale(1) } 50% { opacity:.7; transform:scale(.8) } }
+@keyframes pagein { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+@keyframes spin { to { transform:rotate(360deg) } }
+@keyframes orb { 0%,100% { box-shadow:0 0 48px rgba(124,58,237,.12) } 50% { box-shadow:0 0 72px rgba(124,58,237,.22) } }
+@keyframes slide-in { from { opacity:0; transform:translateX(12px) } to { opacity:1; transform:translateX(0) } }
+@keyframes toast-in { from { opacity:0; transform:translateY(12px) scale(.95) } to { opacity:1; transform:translateY(0) scale(1) } }
+@keyframes toast-out { to { opacity:0; transform:translateY(-8px) scale(.95) } }
+
+.animate-pdot     { animation: pdot 2s ease infinite; }
+.animate-pagein   { animation: pagein .28s cubic-bezier(0.4,0,0.2,1) both; }
+.animate-spin-orca{ animation: spin .7s linear infinite; }
+.animate-orb      { animation: orb 3s ease infinite; }
+.animate-slide-in { animation: slide-in .22s cubic-bezier(0.4,0,0.2,1) both; }
