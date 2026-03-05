@@ -1,96 +1,113 @@
-# 🐋 OrcaHub
+![OrcaHub](web/frontend/public/favicon.svg)
+
+# OrcaHub
 
 ## Unified Dashboard for Docker & Kubernetes
 
-OrcaHub is an open-source control center that unifies **Docker** and **Kubernetes** into a single, modern dashboard.
-It provides a clean interface for inspecting, managing, and understanding your containers, clusters, logs, and resources — all in one place.
+OrcaHub is an open-source control center that unifies **Docker** and **Kubernetes** into a single, modern dashboard. It provides a clean interface for inspecting, managing, and understanding your containers, clusters, logs, and resources — all from one place.
 
 This repository is a **monorepo** containing the full OrcaHub application:
 
-- A **Go backend** (REST API, Docker & Kubernetes integrations, optional AI adapters)
-- A **React frontend** (dashboard UI)
-- Tooling to build a **single Docker image** that serves both
-
-AI models (like **Ollama**, **OpenAI**, or **Anthropic**) run **outside** OrcaHub and are accessed via HTTP.
+- A **Go backend** — REST API, Docker & Kubernetes integrations
+- A **React frontend** — dashboard UI built with Vite, TypeScript, and shadcn/ui
+- Tooling to produce a **single portable binary** (or Docker image) that serves both
 
 ---
 
 ## 🌟 Features
-
+º
 ### 🐳 Docker Management
 
-- List containers, images, volumes, networks
+- List, inspect, and filter containers, images, volumes, and networks
 - Start, stop, restart, and delete containers
-- Inspect details, view logs, run exec commands
-- Pull and build images
-- Manage port bindings, mounts, environment variables
+- View real-time logs and run exec commands (`docker exec -it` style terminal)
+- Pull and manage images; prune unused resources
+- Manage port bindings, mounts, environment variables, and restart policies
 
 ### ☸️ Kubernetes Management *(coming soon)*
 
 - Connect via local kubeconfig or in-cluster config
-- Explore namespaces, pods, deployments, services, nodes
+- Explore namespaces, pods, deployments, services, and nodes
 - View logs, events, and resource details
 
-### 📊 Unified Dashboard
+### 📊 Dashboard
 
-- Real-time views of Docker and Kubernetes resources
-- Log and YAML views
-- Clean, modern UI designed for clarity and speed
+- Real-time resource metrics (CPU, memory, network I/O) with live charts
+- Per-container stats table
+- Environment switcher — toggle between Docker and Kubernetes views
+- Docker Compose stack management
 
-### 🧠 Optional AI-Assisted Workflows
+### 🧠 AI Assistant *(optional)* (on progress)
 
-#### Enabled when an external LLM provider is configured
+When an external LLM provider is configured (Ollama, OpenAI, Anthropic):
 
-- Explain pod/container failures
-- Summarize logs and events
-- Generate Kubernetes YAML
-- Generate Docker/kubectl commands
-- Suggest fixes and optimizations
+- Ask questions about your infrastructure in natural language
+- Summarize logs and diagnose container failures
+- Suggest fixes and generate Docker commands
 
----
+### Backend import graph (no cycles)
 
-### Import graph (no cycles)
-
-``` txt
+```
 model  ←  adapter  ←  domain  ←  api/handler
   ↑                                   ↑
   └──────────── api/mappers ───────────┘
 ```
 
-### Environment variables
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `ORCAHUB_PORT` | `9876` | Port the server listens on |
-
-The server reads `.env` automatically on startup via `godotenv`. In Docker, variables are injected directly into the container environment.
-
----
-
-## 🎨 Frontend Architecture (React)
-
-The frontend is a modern Vite-based React application that:
-
-- Calls the backend's `/api/...` endpoints
-- Renders Docker and Kubernetes resource views
-- Provides log and YAML views
-- Is compiled into static assets and embedded into the Go binary for production releases
-
 ---
 
 ## 🚀 Running locally
 
-```bash
-# Start the backend
-go run cmd/server/main.go
+### Backend only
 
-# Start the frontend (separate terminal)
-cd frontend
-npm install
-npm run dev
+```bash
+go run cmd/server/main.go
 ```
 
 The API will be available at `http://localhost:9876`.
+
+### Frontend only (with hot reload)
+
+```bash
+cd web/frontend
+pnpm install
+pnpm dev
+```
+
+Vite proxies `/api` requests to the Go backend at `:9876`.
+
+### Full stack (production build)
+
+```bash
+make build
+./bin/orcahub
+```
+
+Open `http://localhost:9876` — the Go binary serves both the API and the frontend.
+
+---
+
+## 🐳 Docker
+
+Build and run as a single self-contained image:
+
+```bash
+make docker
+docker run -p 9876:9876 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  orcahub:latest
+```
+
+The Docker socket mount is required so OrcaHub can communicate with the Docker daemon on the host.
+
+---
+
+## ⚙️ Environment variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `ORCAHUB_PORT` | `9876` | Port the server listens on |
+
+The server reads a `.env` file automatically on startup via `godotenv`. In Docker, variables are injected directly into the container environment.
 
 ---
 
@@ -106,10 +123,10 @@ No external dependencies required — mocks are used for all service and adapter
 # Run all unit tests
 go test ./...
 
-# Run with verbose output
+# With verbose output
 go test -v ./...
 
-# Run tests for a specific resource
+# For a specific resource
 go test ./internal/docker/containers/...
 go test ./internal/docker/images/...
 go test ./internal/docker/volumes/...
@@ -123,21 +140,12 @@ Integration tests run against a live Docker daemon and are gated behind the `int
 **Requirements:** Docker must be running locally.
 
 ```bash
-# Run integration tests for all resources
+# Run all integration tests
 go test -tags integration ./...
 
-# Run for a specific resource
+# For a specific resource
 go test -tags integration ./internal/docker/containers/adapter/...
 go test -tags integration ./internal/docker/volumes/adapter/...
 ```
 
-Integration tests create real Docker resources (containers, volumes, networks) and clean them up automatically after each test via `t.Cleanup()`, even if the test fails.
-
-### What is tested
-
-| Layer | Type | Coverage |
-| --- | --- | --- |
-| `model → api` mappers | unit | Field mapping, empty lists, nested structs |
-| `domain/service_impl` | unit + mock | Delegation to adapter, error propagation |
-| `api/handler` | HTTP + mock | Status codes, JSON parsing, query params |
-| `adapter_impl` | integration | Full lifecycle against Docker Engine |
+Integration tests create real Docker resources (containers, volumes, networks) and clean them up automatically after each test via `t.Cleanup()`, even on failure.
