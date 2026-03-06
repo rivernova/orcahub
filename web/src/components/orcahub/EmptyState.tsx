@@ -44,7 +44,6 @@ export function EmptyState({ icon, title, description, action, className, error 
   )
 }
 
-// Compact version for table rows
 export function EmptyTableRow({ cols, icon, title, description }: {
   cols:         number
   icon?:        string
@@ -60,7 +59,6 @@ export function EmptyTableRow({ cols, icon, title, description }: {
   )
 }
 
-// Error banner for top of pages
 export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 mb-5 rounded-[11px] bg-[rgba(239,68,68,0.07)] border border-[rgba(239,68,68,0.2)]">

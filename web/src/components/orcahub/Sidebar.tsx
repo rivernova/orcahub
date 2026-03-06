@@ -59,7 +59,6 @@ export function Sidebar() {
   const collapsed = !sidebarOpen
 
   const runningCount = containers.filter(c => c.state === 'running').length
-
   const navGroups = env === 'k8s' ? k8sNav : dockerNav
 
   return (
@@ -70,7 +69,6 @@ export function Sidebar() {
         collapsed ? 'w-14' : 'w-[232px]',
       )}
     >
-      {/* Env badge */}
       <div
         className={cn(
           'flex items-center gap-2 mx-2 mb-1 rounded-[11px] border text-[10px] font-bold tracking-[.1em] uppercase',
@@ -81,11 +79,10 @@ export function Sidebar() {
             : 'bg-[rgba(124,58,237,0.07)] border-[rgba(124,58,237,0.18)] text-[#a78bfa]',
         )}
       >
-        <span className="flex-shrink-0 text-[14px]">{env === 'docker' ? '🐳' : '⎈'}</span>
+        <span className="flex-shrink-0 text-[14px]">{env === 'docker' ? '\u{1F433}' : '\u2388'}</span>
         {!collapsed && <span>{env === 'docker' ? 'Docker' : 'Kubernetes'}</span>}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden">
         {navGroups.map(group => (
           <div key={group.group}>
@@ -108,19 +105,10 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
       <div className="border-t border-[var(--border)] pt-2.5">
         {bottomNav.map(item => (
-          <NavBtn
-            key={item.route}
-            item={item}
-            active={route === item.route}
-            collapsed={collapsed}
-            onClick={() => navigate(item.route)}
-          />
+          <NavBtn key={item.route} item={item} active={route === item.route} collapsed={collapsed} onClick={() => navigate(item.route)} />
         ))}
-
-        {/* Collapse btn */}
         <button
           onClick={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
           className={cn(
@@ -129,9 +117,7 @@ export function Sidebar() {
             collapsed ? 'px-2 py-2 justify-center' : 'px-4 py-2',
           )}
         >
-          <ChevronLeft
-            className={cn('w-4 h-4 flex-shrink-0 transition-transform duration-[320ms]', collapsed && 'rotate-180')}
-          />
+          <ChevronLeft className={cn('w-4 h-4 flex-shrink-0 transition-transform duration-[320ms]', collapsed && 'rotate-180')} />
           {!collapsed && 'Collapse'}
         </button>
       </div>
@@ -139,14 +125,8 @@ export function Sidebar() {
   )
 }
 
-function NavBtn({
-  item, active, collapsed, badge, onClick,
-}: {
-  item:     NavItem
-  active:   boolean
-  collapsed:boolean
-  badge?:   number
-  onClick:  () => void
+function NavBtn({ item, active, collapsed, badge, onClick }: {
+  item: NavItem; active: boolean; collapsed: boolean; badge?: number; onClick: () => void
 }) {
   return (
     <button

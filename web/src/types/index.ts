@@ -119,26 +119,26 @@ export interface ExecResponse {
   exit_code: number
 }
 
-export type Env = 'docker' | 'k8s'
+export type Env = "docker" | "k8s"
 
 export type Route =
-  | 'overview'
-  | 'containers'
-  | 'images'
-  | 'volumes'
-  | 'networks'
-  | 'metrics'
-  | 'compose'
-  | 'settings'
-  | 'k8s-overview'
-  | 'k8s-pods'
-  | 'k8s-deployments'
-  | 'k8s-services'
-  | 'k8s-namespaces'
+  | "overview"
+  | "containers"
+  | "images"
+  | "volumes"
+  | "networks"
+  | "metrics"
+  | "compose"
+  | "settings"
+  | "k8s-overview"
+  | "k8s-pods"
+  | "k8s-deployments"
+  | "k8s-services"
+  | "k8s-namespaces"
 
 export interface AppState {
   route:        Route
-  theme:        'dark' | 'light'
+  theme:        "dark" | "light"
   env:          Env
   k8sConnected: boolean
   sidebarOpen:  boolean
@@ -152,15 +152,15 @@ export interface AppState {
 }
 
 export type AppAction =
-  | { type: 'SET_ROUTE';      payload: Route }
-  | { type: 'SET_THEME';      payload: 'dark' | 'light' }
-  | { type: 'SET_ENV';        payload: Env }
-  | { type: 'SET_K8S';        payload: boolean }
-  | { type: 'TOGGLE_SIDEBAR' }
-  | { type: 'TOGGLE_AI' }
-  | { type: 'SET_CONTAINERS'; payload: Container[] }
-  | { type: 'SET_IMAGES';     payload: DockerImage[] }
-  | { type: 'SET_VOLUMES';    payload: Volume[] }
-  | { type: 'SET_NETWORKS';   payload: Network[] }
-  | { type: 'SET_LOADING';    payload: boolean }
-  | { type: 'SET_ERROR';      payload: string | null }
+  | { type: "SET_ROUTE";      payload: Route }
+  | { type: "SET_THEME";      payload: "dark" | "light" }
+  | { type: "SET_ENV";        payload: Env }
+  | { type: "SET_K8S";        payload: boolean }
+  | { type: "TOGGLE_SIDEBAR" }
+  | { type: "TOGGLE_AI" }
+  | { type: "SET_CONTAINERS"; payload: Container[] }
+  | { type: "SET_IMAGES";     payload: DockerImage[] }
+  | { type: "SET_VOLUMES";    payload: Volume[] }
+  | { type: "SET_NETWORKS";   payload: Network[] }
+  | { type: "SET_LOADING";    payload: boolean }
+  | { type: "SET_ERROR";      payload: string | null }

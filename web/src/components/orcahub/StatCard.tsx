@@ -6,7 +6,7 @@ interface StatCardProps {
   value:    string | number
   sub?:     ReactNode
   color?:   'green' | 'cyan' | 'amber' | 'red' | 'default'
-  sparkline?: number[] // 0-100 values
+  sparkline?: number[]
   className?: string
 }
 
@@ -25,7 +25,7 @@ export function StatCard({ label, value, sub, color = 'default', className }: St
         'bg-[var(--bg-surface)] border border-[var(--border)] rounded-[16px] px-5 py-[18px]',
         'relative overflow-hidden transition-all duration-[220ms] cursor-default',
         'hover:border-[var(--border-bright)] hover:-translate-y-px hover:shadow-[var(--shadow-hover)]',
-        'after:content-[""] after:absolute after:top-0 after:left-0 after:right-0 after:h-px',
+        'after:content-[\"\"] after:absolute after:top-0 after:left-0 after:right-0 after:h-px',
         'after:bg-gradient-to-r after:from-transparent after:via-white/5 after:to-transparent',
         className
       )}

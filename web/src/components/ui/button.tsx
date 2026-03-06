@@ -30,7 +30,6 @@ const buttonVariants = cva(
           'bg-[rgba(245,158,11,0.12)] border-[rgba(245,158,11,0.3)] text-[#f59e0b]',
           'hover:bg-[rgba(245,158,11,0.2)] hover:border-[#f59e0b]',
         ],
-        // Fixed: explicit color so SVG icons are always visible
         icon: [
           'w-[34px] h-[34px] p-0 rounded-[7px] border-transparent bg-transparent',
           'text-[rgba(240,244,255,0.55)]',

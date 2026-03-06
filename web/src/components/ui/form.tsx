@@ -5,7 +5,6 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ─── Input ───────────────────────────────────────────────────────────────────
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (
     <input
@@ -23,7 +22,6 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
 )
 Input.displayName = 'Input'
 
-// ─── Textarea ────────────────────────────────────────────────────────────────
 const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   ({ className, ...props }, ref) => (
     <textarea
@@ -41,7 +39,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
 )
 Textarea.displayName = 'Textarea'
 
-// ─── Label ───────────────────────────────────────────────────────────────────
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -54,7 +51,6 @@ const Label = React.forwardRef<
 ))
 Label.displayName = LabelPrimitive.Root.displayName
 
-// ─── Switch ──────────────────────────────────────────────────────────────────
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
@@ -80,7 +76,6 @@ const Switch = React.forwardRef<
 ))
 Switch.displayName = SwitchPrimitive.Root.displayName
 
-// ─── Select ──────────────────────────────────────────────────────────────────
 const Select = SelectPrimitive.Root
 const SelectValue = SelectPrimitive.Value
 const SelectGroup = SelectPrimitive.Group

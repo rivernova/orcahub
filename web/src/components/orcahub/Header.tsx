@@ -28,7 +28,6 @@ export function Header() {
     navigate(env === 'k8s' ? 'k8s-overview' : 'overview')
   }
 
-  // Search results
   const searchResults = search.length > 1
     ? [
         ...state.containers.filter(c =>
@@ -53,7 +52,7 @@ export function Header() {
 
   return (
     <header className="flex items-center h-[58px] px-0 pr-[18px] border-b border-[var(--border)] bg-[var(--bg-void)] z-[200]">
-      {/* Logo zone — matches sidebar width */}
+      {/* Logo zone */}
       <div
         className={cn(
           'flex-shrink-0 flex items-center gap-[11px] overflow-hidden',
@@ -77,21 +76,8 @@ export function Header() {
       {/* Env switcher */}
       <div className="mx-3.5 flex-shrink-0">
         <div className="flex items-center gap-[3px] bg-[var(--bg-raised)] border border-[var(--border)] rounded-[16px] p-[3px]">
-          <EnvBtn
-            active={state.env === 'docker'}
-            onClick={() => switchEnv('docker')}
-            label="🐳 Docker"
-            color="cyan"
-            connected
-          />
-          <EnvBtn
-            active={state.env === 'k8s'}
-            onClick={() => switchEnv('k8s')}
-            label="⎈ Kubernetes"
-            color="purple"
-            connected={state.k8sConnected}
-            detectTag={state.k8sConnected ? 'detected' : undefined}
-          />
+          <EnvBtn active={state.env === 'docker'} onClick={() => switchEnv('docker')} label="🐳 Docker" color="cyan" connected />
+          <EnvBtn active={state.env === 'k8s'} onClick={() => switchEnv('k8s')} label="⎈ Kubernetes" color="purple" connected={state.k8sConnected} detectTag={state.k8sConnected ? 'detected' : undefined} />
         </div>
       </div>
 
@@ -116,7 +102,6 @@ export function Header() {
           <span className="font-mono text-[9.5px] px-[5px] py-[2px] bg-[var(--bg-raised)] border border-[var(--border)] rounded text-[var(--text-muted)] whitespace-nowrap">⌘K</span>
         </div>
 
-        {/* Dropdown */}
         {searchOpen && searchResults.length > 0 && (
           <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-[var(--bg-surface)] border border-[var(--border)] rounded-[16px] p-2 shadow-[var(--shadow-modal)] z-[500] animate-pagein">
             <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[var(--text-muted)] px-2.5 py-1.5 mb-1">Results</div>
@@ -139,55 +124,20 @@ export function Header() {
 
       {/* Right actions */}
       <div className="flex items-center gap-[7px] ml-auto">
-        <Button
-          variant="icon"
-          title="Refresh"
-          onClick={handleRefresh}
-          className={refreshing ? 'animate-spin' : ''}
-        >
+        <Button variant="icon" title="Refresh" onClick={handleRefresh} className={refreshing ? 'animate-spin' : ''}>
           <RefreshCw className="w-[15px] h-[15px]" />
         </Button>
-
-        <Button
-          variant="icon"
-          title="Toggle theme"
-          onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'dark' ? 'light' : 'dark' })}
-        >
-          {state.theme === 'dark'
-            ? <Sun className="w-[15px] h-[15px]" />
-            : <Moon className="w-[15px] h-[15px]" />}
+        <Button variant="icon" title="Toggle theme" onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'dark' ? 'light' : 'dark' })}>
+          {state.theme === 'dark' ? <Moon className="w-[15px] h-[15px]" /> : <Sun className="w-[15px] h-[15px]" />}
         </Button>
-
+        <Button variant="icon" title="Notifications"><Bell className="w-[15px] h-[15px]" /></Button>
         <Button
-          variant="icon"
-          title="Notifications"
-          className="relative"
-          onClick={() => toast('3 containers need attention', 'info')}
-        >
-          <Bell className="w-[15px] h-[15px]" />
-          <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-[#f59e0b] rounded-full shadow-[0_0_6px_#f59e0b] animate-pdot" />
-        </Button>
-
-        <div className="w-px h-[22px] bg-[var(--border)] mx-[3px]" />
-
-        <button
+          variant={state.aiOpen ? 'icon-active' : 'icon'}
+          title="AI Assistant"
           onClick={() => dispatch({ type: 'TOGGLE_AI' })}
-          className={cn(
-            'flex items-center gap-[7px] px-3.5 py-[7px] rounded-[11px] text-[12.5px] font-semibold',
-            'transition-all duration-[220ms] whitespace-nowrap border',
-            state.aiOpen
-              ? 'bg-gradient-to-br from-[rgba(0,212,255,0.22)] to-[rgba(124,58,237,0.2)] border-[rgba(0,212,255,0.35)] text-[#00d4ff] shadow-[0_0_22px_rgba(0,212,255,0.18)]'
-              : 'bg-gradient-to-br from-[rgba(0,212,255,0.1)] to-[rgba(124,58,237,0.1)] border-[rgba(0,212,255,0.22)] text-[#00d4ff] hover:from-[rgba(0,212,255,0.18)] hover:to-[rgba(124,58,237,0.18)] hover:border-[rgba(0,212,255,0.45)] hover:shadow-[0_0_18px_rgba(0,212,255,0.12)]',
-          )}
         >
-          <span className="w-[7px] h-[7px] rounded-full bg-[#00d4ff] shadow-[0_0_7px_#00d4ff] animate-pdot flex-shrink-0" />
-          <Sparkles className="w-3.5 h-3.5" />
-          OrcaHub AI
-        </button>
-
-        <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] flex items-center justify-center text-[12px] font-bold text-white cursor-pointer">
-          U
-        </div>
+          <Sparkles className="w-[15px] h-[15px]" />
+        </Button>
       </div>
     </header>
   )
@@ -195,34 +145,21 @@ export function Header() {
 
 function LogoMark() {
   return (
-    <div className="w-[30px] h-[30px] flex-shrink-0">
-      <svg viewBox="0 0 32 32" fill="none" className="w-full h-full">
-        <rect x="2" y="2" width="12" height="12" rx="2.5" fill="rgba(0,212,255,.14)" stroke="rgba(0,212,255,.45)" strokeWidth="1.2"/>
-        <rect x="18" y="2" width="12" height="12" rx="2.5" fill="rgba(0,212,255,.07)" stroke="rgba(0,212,255,.22)" strokeWidth="1.2"/>
-        <rect x="2" y="18" width="12" height="12" rx="2.5" fill="rgba(0,212,255,.07)" stroke="rgba(0,212,255,.22)" strokeWidth="1.2"/>
-        <rect x="18" y="18" width="12" height="12" rx="2.5" fill="rgba(124,58,237,.1)" stroke="rgba(124,58,237,.3)" strokeWidth="1.2"/>
-        <circle cx="16" cy="16" r="2.8" fill="rgba(0,212,255,.65)"/>
-      </svg>
+    <div className="w-7 h-7 rounded-[8px] bg-gradient-to-br from-[rgba(0,212,255,0.25)] to-[rgba(124,58,237,0.25)] border border-[rgba(0,212,255,0.3)] flex items-center justify-center flex-shrink-0">
+      <span className="text-[14px]">🐋</span>
     </div>
   )
 }
 
-function EnvBtn({
-  active, onClick, label, color, connected, detectTag
-}: {
-  active:     boolean
-  onClick:    () => void
-  label:      string
-  color:      'cyan' | 'purple'
-  connected:  boolean
-  detectTag?: string
+function EnvBtn({ active, onClick, label, color, connected, detectTag }: {
+  active: boolean; onClick: () => void; label: string; color: 'cyan' | 'purple'
+  connected: boolean; detectTag?: string
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-1.5 px-3 py-[5px] rounded-[11px] text-[12px] font-semibold',
-        'transition-all duration-[220ms] border-none whitespace-nowrap relative',
+        'flex items-center gap-[7px] px-3 py-[5px] rounded-[13px] text-[11.5px] font-semibold transition-all duration-[220ms]',
         active
           ? cn(
               'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-[0_1px_6px_rgba(0,0,0,0.2)]',

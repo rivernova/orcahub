@@ -83,7 +83,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       api.networks.list(),
     ])
 
-    // Only update state on success — existing data stays visible on failure (no glitch)
     if (ctrs.status === 'fulfilled') dispatch({ type: 'SET_CONTAINERS', payload: ctrs.value })
     if (imgs.status === 'fulfilled') dispatch({ type: 'SET_IMAGES',     payload: imgs.value })
     if (vols.status === 'fulfilled') dispatch({ type: 'SET_VOLUMES',    payload: vols.value })

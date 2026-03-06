@@ -52,17 +52,14 @@ export function App() {
         transition: 'grid-template-columns 0.32s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
-      {/* Header spans full width */}
       <header style={{ gridColumn: '1 / -1', gridRow: '1' }}>
         <Header />
       </header>
 
-      {/* Sidebar */}
       <div style={{ gridColumn: '1', gridRow: '2', overflow: 'hidden', display: 'flex' }}>
         <Sidebar />
       </div>
 
-      {/* Main content */}
       <main
         style={{
           gridColumn: '2',
@@ -77,7 +74,6 @@ export function App() {
         </div>
       </main>
 
-      {/* AI panel */}
       {state.aiOpen && (
         <div style={{ gridColumn: '3', gridRow: '2', overflow: 'hidden', display: 'flex' }}>
           <AIPanel />
