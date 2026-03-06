@@ -13,4 +13,6 @@ type ImageService interface {
 	Pull(ctx context.Context, opts model.PullOptions) error
 	Build(ctx context.Context, opts model.BuildOptions) (*model.BuildResult, error)
 	Prune(ctx context.Context) (model.PruneResult, error)
+	Tag(ctx context.Context, opts model.TagOptions) error
+	History(ctx context.Context, id string) ([]model.HistoryEntry, error)
 }

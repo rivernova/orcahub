@@ -7,6 +7,7 @@ import (
 	imagerouter "github.com/rivernova/orcahub/internal/docker/images/api/router"
 	networkrouter "github.com/rivernova/orcahub/internal/docker/networks/api/router"
 	volumerouter "github.com/rivernova/orcahub/internal/docker/volumes/api/router"
+	"github.com/rivernova/orcahub/internal/middleware"
 	systemrouter "github.com/rivernova/orcahub/internal/system"
 
 	containerapi "github.com/rivernova/orcahub/internal/docker/containers/api"
@@ -32,16 +33,7 @@ func SetupRouter(handlers *Handlers) *gin.Engine {
 	r := gin.Default()
 
 	// CORS for dev
-	r.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type,Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	r.Use(middleware.CORSMiddleware())
 
 	api := r.Group("/api")
 	{

@@ -2,12 +2,14 @@ package adapter
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"time"
 
+	"github.com/docker/docker/api/pkg/stdcopy"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -229,12 +231,34 @@ func (a *ContainerAdapterImpl) Logs(ctx context.Context, id string, opts model.L
 	}
 	defer reader.Close()
 
-	var lines []string
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	var stdout, stderr bytes.Buffer
+	if _, err := stdcopy.StdCopy(&stdout, &stderr, reader); err != nil {
+		// Fallback para TTY=true (stream sin multiplexar)
+		reader2, _ := a.client.ContainerLogs(ctx, id, container.LogsOptions{
+			ShowStdout: true,
+			ShowStderr: true,
+			Tail:       opts.Tail,
+		})
+		if reader2 != nil {
+			defer reader2.Close()
+			scanner := bufio.NewScanner(reader2)
+			var lines []string
+			for scanner.Scan() {
+				lines = append(lines, scanner.Text())
+			}
+			return lines, scanner.Err()
+		}
+		return nil, err
 	}
-	return lines, scanner.Err()
+
+	var lines []string
+	for _, buf := range []*bytes.Buffer{&stdout, &stderr} {
+		scanner := bufio.NewScanner(buf)
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+	}
+	return lines, nil
 }
 
 func (a *ContainerAdapterImpl) Stats(ctx context.Context, id string) (*model.ContainerStats, error) {

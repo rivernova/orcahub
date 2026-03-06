@@ -38,3 +38,11 @@ func (s *ImageServiceImpl) Build(ctx context.Context, opts model.BuildOptions) (
 func (s *ImageServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
 	return s.adapter.Prune(ctx)
 }
+
+func (s *ImageServiceImpl) Tag(ctx context.Context, opts model.TagOptions) error {
+	return s.adapter.Tag(ctx, opts)
+}
+
+func (s *ImageServiceImpl) History(ctx context.Context, id string) ([]model.HistoryEntry, error) {
+	return s.adapter.History(ctx, id)
+}

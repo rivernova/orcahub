@@ -210,3 +210,29 @@ func (a *ImageAdapterImpl) Prune(ctx context.Context) (model.PruneResult, error)
 	}
 	return model.PruneResult{Deleted: deleted, SpaceReclaimed: int64(report.SpaceReclaimed)}, nil
 }
+
+func (a *ImageAdapterImpl) Tag(ctx context.Context, opts model.TagOptions) error {
+	if err := a.client.ImageTag(ctx, opts.Source, opts.Target); err != nil {
+		return fmt.Errorf("failed to tag image %s as %s: %w", opts.Source, opts.Target, err)
+	}
+	return nil
+}
+
+func (a *ImageAdapterImpl) History(ctx context.Context, id string) ([]model.HistoryEntry, error) {
+	history, err := a.client.ImageHistory(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get history for image %s: %w", id, err)
+	}
+	result := make([]model.HistoryEntry, 0, len(history))
+	for _, h := range history {
+		result = append(result, model.HistoryEntry{
+			ID:        h.ID,
+			Created:   h.Created,
+			CreatedBy: h.CreatedBy,
+			Size:      h.Size,
+			Comment:   h.Comment,
+			Tags:      h.Tags,
+		})
+	}
+	return result, nil
+}

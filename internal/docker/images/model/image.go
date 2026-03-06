@@ -60,3 +60,17 @@ type PruneResult struct {
 	Deleted        []string `json:"deleted"`
 	SpaceReclaimed int64    `json:"space_reclaimed"`
 }
+
+type TagOptions struct {
+	Source string
+	Target string
+}
+
+type HistoryEntry struct {
+	ID        string   `json:"id"`
+	Created   int64    `json:"created"`
+	CreatedBy string   `json:"created_by"`
+	Size      int64    `json:"size"`
+	Comment   string   `json:"comment"`
+	Tags      []string `json:"tags"`
+}

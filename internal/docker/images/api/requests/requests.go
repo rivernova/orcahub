@@ -24,3 +24,8 @@ type RemoveImageRequest struct {
 	Force         bool `form:"force"`
 	PruneChildren bool `form:"prune_children"`
 }
+
+type TagImageRequest struct {
+	Source string `json:"source" binding:"required"`
+	Target string `json:"target" binding:"required"`
+}
