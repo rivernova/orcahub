@@ -81,3 +81,7 @@ type PruneResult struct {
 	Deleted        []string `json:"deleted"`
 	SpaceReclaimed int64    `json:"space_reclaimed"`
 }
+type TopResult struct {
+	Titles    []string   `json:"titles"`
+	Processes [][]string `json:"processes"`
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	model "github.com/rivernova/orcahub/internal/docker/networks/model"
@@ -144,4 +145,14 @@ func (a *NetworkAdapterImpl) Disconnect(ctx context.Context, networkID string, o
 		return fmt.Errorf("failed to disconnect container %s from network %s: %w", opts.ContainerID, networkID, err)
 	}
 	return nil
+}
+
+func (a *NetworkAdapterImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	report, err := a.client.NetworksPrune(ctx, filters.Args{})
+	if err != nil {
+		return model.PruneResult{}, fmt.Errorf("failed to prune networks: %w", err)
+	}
+	return model.PruneResult{
+		Deleted: report.NetworksDeleted,
+	}, nil
 }

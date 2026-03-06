@@ -338,3 +338,42 @@ func (a *ContainerAdapterImpl) Prune(ctx context.Context) (model.PruneResult, er
 		SpaceReclaimed: int64(report.SpaceReclaimed),
 	}, nil
 }
+
+func (a *ContainerAdapterImpl) Pause(ctx context.Context, id string) error {
+	if err := a.client.ContainerPause(ctx, id); err != nil {
+		return fmt.Errorf("failed to pause container %s: %w", id, err)
+	}
+	return nil
+}
+
+func (a *ContainerAdapterImpl) Unpause(ctx context.Context, id string) error {
+	if err := a.client.ContainerUnpause(ctx, id); err != nil {
+		return fmt.Errorf("failed to unpause container %s: %w", id, err)
+	}
+	return nil
+}
+
+func (a *ContainerAdapterImpl) Rename(ctx context.Context, id string, name string) error {
+	if err := a.client.ContainerRename(ctx, id, name); err != nil {
+		return fmt.Errorf("failed to rename container %s: %w", id, err)
+	}
+	return nil
+}
+
+func (a *ContainerAdapterImpl) Kill(ctx context.Context, id string, signal string) error {
+	if err := a.client.ContainerKill(ctx, id, signal); err != nil {
+		return fmt.Errorf("failed to kill container %s: %w", id, err)
+	}
+	return nil
+}
+
+func (a *ContainerAdapterImpl) Top(ctx context.Context, id string) (*model.TopResult, error) {
+	top, err := a.client.ContainerTop(ctx, id, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get top for container %s: %w", id, err)
+	}
+	return &model.TopResult{
+		Titles:    top.Titles,
+		Processes: top.Processes,
+	}, nil
+}

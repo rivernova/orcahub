@@ -32,3 +32,11 @@ type LogsQueryRequest struct {
 	Tail   string `form:"tail"` // number of lines or "all"
 	Follow bool   `form:"follow"`
 }
+
+type RenameContainerRequest struct {
+	Name string `json:"name" binding:"required"`
+}
+
+type KillContainerRequest struct {
+	Signal string `json:"signal"`
+}

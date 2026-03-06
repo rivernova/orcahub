@@ -147,3 +147,64 @@ func (h *Handler) Prune(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, result)
 }
+
+func (h *Handler) Pause(c *gin.Context) {
+	id := c.Param("id")
+	if err := h.service.Pause(c.Request.Context(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "container paused"})
+}
+
+func (h *Handler) Unpause(c *gin.Context) {
+	id := c.Param("id")
+	if err := h.service.Unpause(c.Request.Context(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "container unpaused"})
+}
+
+func (h *Handler) Rename(c *gin.Context) {
+	id := c.Param("id")
+	var req requests.RenameContainerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name is required"})
+		return
+	}
+	if err := h.service.Rename(c.Request.Context(), id, req.Name); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "container renamed"})
+}
+
+func (h *Handler) Kill(c *gin.Context) {
+	id := c.Param("id")
+	var req requests.KillContainerRequest
+	_ = c.ShouldBindJSON(&req)
+	signal := req.Signal
+	if signal == "" {
+		signal = "SIGKILL"
+	}
+	if err := h.service.Kill(c.Request.Context(), id, signal); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "signal sent"})
+}
+
+func (h *Handler) Top(c *gin.Context) {
+	id := c.Param("id")
+	result, err := h.service.Top(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}

@@ -38,3 +38,7 @@ func (s *NetworkServiceImpl) Connect(ctx context.Context, networkID string, opts
 func (s *NetworkServiceImpl) Disconnect(ctx context.Context, networkID string, opts model.DisconnectOptions) error {
 	return s.adapter.Disconnect(ctx, networkID, opts)
 }
+
+func (s *NetworkServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
+	return s.adapter.Prune(ctx)
+}

@@ -109,3 +109,15 @@ func (h *Handler) Disconnect(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "container disconnected from network"})
 }
+
+func (h *Handler) Prune(c *gin.Context) {
+	result, err := h.service.Prune(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"deleted":         result.Deleted,
+		"space_reclaimed": result.SpaceReclaimed,
+	})
+}

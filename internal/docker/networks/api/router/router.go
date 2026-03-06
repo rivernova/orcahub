@@ -14,5 +14,6 @@ func Register(rg *gin.RouterGroup, handler *api.Handler) {
 		networks.DELETE("/:id", handler.Delete)
 		networks.POST("/:id/connect", handler.Connect)
 		networks.POST("/:id/disconnect", handler.Disconnect)
+		networks.POST("/prune", handler.Prune)
 	}
 }

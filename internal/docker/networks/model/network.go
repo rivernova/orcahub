@@ -51,3 +51,7 @@ type DisconnectOptions struct {
 	ContainerID string
 	Force       bool
 }
+type PruneResult struct {
+	Deleted        []string `json:"deleted"`
+	SpaceReclaimed int64    `json:"space_reclaimed"`
+}

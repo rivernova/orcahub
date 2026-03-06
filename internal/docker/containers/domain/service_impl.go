@@ -58,3 +58,23 @@ func (s *ContainerServiceImpl) Exec(ctx context.Context, id string, opts model.E
 func (s *ContainerServiceImpl) Prune(ctx context.Context) (model.PruneResult, error) {
 	return s.adapter.Prune(ctx)
 }
+
+func (s *ContainerServiceImpl) Pause(ctx context.Context, id string) error {
+	return s.adapter.Pause(ctx, id)
+}
+
+func (s *ContainerServiceImpl) Unpause(ctx context.Context, id string) error {
+	return s.adapter.Unpause(ctx, id)
+}
+
+func (s *ContainerServiceImpl) Rename(ctx context.Context, id string, name string) error {
+	return s.adapter.Rename(ctx, id, name)
+}
+
+func (s *ContainerServiceImpl) Kill(ctx context.Context, id string, signal string) error {
+	return s.adapter.Kill(ctx, id, signal)
+}
+
+func (s *ContainerServiceImpl) Top(ctx context.Context, id string) (*model.TopResult, error) {
+	return s.adapter.Top(ctx, id)
+}

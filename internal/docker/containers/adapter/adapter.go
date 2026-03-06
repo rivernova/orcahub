@@ -18,4 +18,9 @@ type ContainerAdapter interface {
 	Stats(ctx context.Context, id string) (*model.ContainerStats, error)
 	Exec(ctx context.Context, id string, opts model.ExecOptions) (*model.ExecResult, error)
 	Prune(ctx context.Context) (model.PruneResult, error)
+	Pause(ctx context.Context, id string) error
+	Unpause(ctx context.Context, id string) error
+	Rename(ctx context.Context, id string, name string) error
+	Kill(ctx context.Context, id string, signal string) error
+	Top(ctx context.Context, id string) (*model.TopResult, error)
 }

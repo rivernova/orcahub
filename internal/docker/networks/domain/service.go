@@ -13,4 +13,5 @@ type NetworkService interface {
 	Delete(ctx context.Context, id string) error
 	Connect(ctx context.Context, networkID string, opts model.ConnectOptions) error
 	Disconnect(ctx context.Context, networkID string, opts model.DisconnectOptions) error
+	Prune(ctx context.Context) (model.PruneResult, error)
 }
