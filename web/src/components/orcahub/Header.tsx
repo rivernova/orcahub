@@ -139,30 +139,34 @@ export function Header() {
 
       {/* Right actions */}
       <div className="flex items-center gap-[7px] ml-auto">
-         <button
-           title="Refresh"
-           onClick={handleRefresh}
-           className="w-[34px] h-[34px] flex items-center justify-center rounded-[7px] text-[rgba(240,244,255,0.55)] hover:text-[rgba(240,244,255,0.9)] hover:bg-[var(--bg-glass-hover)] transition-all"
-         >
-           <RefreshCw className={cn('w-[15px] h-[15px]', refreshing && 'animate-spin')} />
-         </button>
+        <Button
+          variant="icon"
+          title="Refresh"
+          onClick={handleRefresh}
+          className={refreshing ? 'animate-spin' : ''}
+        >
+          <RefreshCw className="w-[15px] h-[15px]" />
+        </Button>
 
-         <button
-           title="Toggle theme"
-           onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'dark' ? 'light' : 'dark' })}
-           className="w-[34px] h-[34px] flex items-center justify-center rounded-[7px] text-[rgba(240,244,255,0.55)] hover:text-[rgba(240,244,255,0.9)] hover:bg-[var(--bg-glass-hover)] transition-all"
-         >
-           {state.theme === 'dark' ? <Sun className="w-[15px] h-[15px]" /> : <Moon className="w-[15px] h-[15px]" />}
-         </button>
+        <Button
+          variant="icon"
+          title="Toggle theme"
+          onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'dark' ? 'light' : 'dark' })}
+        >
+          {state.theme === 'dark'
+            ? <Sun className="w-[15px] h-[15px]" />
+            : <Moon className="w-[15px] h-[15px]" />}
+        </Button>
 
-         <button
-           title="Notifications"
-           onClick={() => toast('3 containers need attention', 'info')}
-           className="relative w-[34px] h-[34px] flex items-center justify-center rounded-[7px] text-[rgba(240,244,255,0.55)] hover:text-[rgba(240,244,255,0.9)] hover:bg-[var(--bg-glass-hover)] transition-all"
-         >
-           <Bell className="w-[15px] h-[15px]" />
-           <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-[#f59e0b] rounded-full shadow-[0_0_6px_#f59e0b] animate-pdot" />
-         </button>
+        <Button
+          variant="icon"
+          title="Notifications"
+          className="relative"
+          onClick={() => toast('3 containers need attention', 'info')}
+        >
+          <Bell className="w-[15px] h-[15px]" />
+          <span className="absolute top-[5px] right-[5px] w-[7px] h-[7px] bg-[#f59e0b] rounded-full shadow-[0_0_6px_#f59e0b] animate-pdot" />
+        </Button>
 
         <div className="w-px h-[22px] bg-[var(--border)] mx-[3px]" />
 

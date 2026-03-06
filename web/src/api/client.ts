@@ -20,16 +20,21 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 }
 
 export const containers = {
-  list:    ()                              => req<Container[]>('GET', '/containers'),
-  inspect: (id: string)                   => req<ContainerInspect>('GET', `/containers/${id}`),
-  create:  (data: Record<string, unknown>)=> req<{ id: string }>('POST', '/containers', data),
-  delete:  (id: string)                   => req<void>('DELETE', `/containers/${id}`),
-  start:   (id: string)                   => req<void>('POST', `/containers/${id}/start`),
-  stop:    (id: string, timeout?: number) => req<void>('POST', `/containers/${id}/stop`, { timeout }),
-  restart: (id: string)                   => req<void>('POST', `/containers/${id}/restart`),
-  logs:    (id: string, tail = 200)       => req<{ logs: string[] }>('GET', `/containers/${id}/logs?tail=${tail}`),
-  stats:   (id: string)                   => req<ContainerStats>('GET', `/containers/${id}/stats`),
-  exec:    (id: string, data: ExecRequest)=> req<ExecResponse>('POST', `/containers/${id}/exec`, data),
+  list:    ()                               => req<Container[]>('GET', '/containers'),
+  inspect: (id: string)                    => req<ContainerInspect>('GET', `/containers/${id}`),
+  create:  (data: Record<string, unknown>) => req<{ id: string }>('POST', '/containers', data),
+  delete:  (id: string)                    => req<void>('DELETE', `/containers/${id}`),
+  start:   (id: string)                    => req<void>('POST', `/containers/${id}/start`),
+  stop:    (id: string, timeout?: number)  => req<void>('POST', `/containers/${id}/stop`, { timeout }),
+  restart: (id: string)                    => req<void>('POST', `/containers/${id}/restart`),
+  pause:   (id: string)                    => req<void>('POST', `/containers/${id}/pause`),
+  unpause: (id: string)                    => req<void>('POST', `/containers/${id}/unpause`),
+  rename:  (id: string, name: string)      => req<void>('POST', `/containers/${id}/rename`, { name }),
+  kill:    (id: string, signal = 'SIGKILL')=> req<void>('POST', `/containers/${id}/kill`, { signal }),
+  logs:    (id: string, tail = 200)        => req<{ logs: string[] }>('GET', `/containers/${id}/logs?tail=${tail}`),
+  stats:   (id: string)                    => req<ContainerStats>('GET', `/containers/${id}/stats`),
+  top:     (id: string)                    => req<{ titles: string[]; processes: string[][] }>('GET', `/containers/${id}/top`),
+  exec:    (id: string, data: ExecRequest) => req<ExecResponse>('POST', `/containers/${id}/exec`, data),
 }
 
 export const images = {
@@ -55,7 +60,7 @@ export const networks = {
 
 export const system = {
   detect: () => req<{ docker: boolean; k8s: boolean; k8s_version?: string }>('GET', '/system/detect'),
-  prune:  () => req<{ reclaimed: number }>('POST', '/system/prune'),
+  prune:  () => req<{ reclaimed: number; containers_deleted: string[]; images_deleted: number; volumes_deleted: string[]; networks_deleted: string[] }>('POST', '/system/prune'),
 }
 
 export const api = { containers, images, volumes, networks, system }

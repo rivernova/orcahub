@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useApp } from '@/context/AppContext'
 import { cn } from '@/lib/utils'
 import { X, Send, Sparkles } from 'lucide-react'
+import { formatBytes } from '@/lib/utils'
 
 interface Message {
   role: 'user' | 'ai'
@@ -10,121 +11,167 @@ interface Message {
 
 const SUGGESTIONS = [
   'Which containers use the most memory?',
-  'How do I scale my Redis service?',
-  'Show containers with high restart count',
+  'Are there any unhealthy containers?',
   'What images are unused?',
+  'How can I reduce disk usage?',
 ]
-
-const RESPONSES: Record<string, string> = {
-  memory: "Your top memory consumers:\n\n1. **postgres-main** — 384 MB (67%)\n2. **app-backend** — 256 MB (55%)\n3. **grafana** — 128 MB (38%)\n\nConsider setting memory limits via `--memory` flag.",
-  scale:  "To scale with Docker Compose:\n\n`docker compose up --scale redis=3 -d`\n\nFor HA Redis, consider Redis Sentinel or Redis Cluster.",
-  restart:"Containers with high restart counts:\n\n- **worker-queue** — 5 restarts\n- **prometheus** — 3 restarts\n- **api-gateway** — 2 restarts\n\nCheck `worker-queue` logs first — it likely has a startup crash.",
-  image:  "Unused images (not backing any container):\n\n- `ubuntu:22.04` — 77 MB\n\nRun `docker image prune` to reclaim disk space.",
-  default:"All critical services are healthy ✓\n\nI can help you analyze resource usage, diagnose issues, or suggest optimizations. What would you like to know?",
-}
 
 export function AIPanel() {
   const { state, dispatch } = useApp()
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [typing, setTyping] = useState(false)
-  const [started, setStarted] = useState(false)
+  const [messages,  setMessages] = useState<Message[]>([])
+  const [input,     setInput]    = useState('')
+  const [thinking,  setThinking] = useState(false)
+  const [started,   setStarted]  = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef  = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, typing])
+  }, [messages, thinking])
 
-  const send = (text?: string) => {
-    const msg = text ?? input.trim()
-    if (!msg) return
-    setInput('')
-    setStarted(true)
-    setMessages(m => [...m, { role: 'user', text: msg }])
-    setTyping(true)
+  useEffect(() => {
+    if (state.aiOpen && !started && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 300)
+    }
+  }, [state.aiOpen, started])
 
-    const key = msg.toLowerCase().includes('mem') ? 'memory'
-      : msg.toLowerCase().includes('scale') || msg.toLowerCase().includes('replica') ? 'scale'
-      : msg.toLowerCase().includes('restart') ? 'restart'
-      : msg.toLowerCase().includes('image') ? 'image'
-      : 'default'
+  const buildContext = () => {
+    const running = state.containers.filter(c => c.state === 'running')
+    const stopped = state.containers.filter(c => c.state !== 'running')
+    const imgSize  = state.images.reduce((s, i) => s + i.size, 0)
 
-    setTimeout(() => {
-      setTyping(false)
-      setMessages(m => [...m, { role: 'ai', text: RESPONSES[key] }])
-    }, 900 + Math.random() * 600)
+    return `You are OrcaHub AI, an expert Docker and container management assistant embedded in the OrcaHub dashboard.
+
+Current Docker environment:
+- Containers: ${state.containers.length} total (${running.length} running, ${stopped.length} stopped/exited)
+- Running: ${running.map(c => `${c.name.replace(/^\//, '')} (${c.image})`).join(', ') || 'none'}
+- Stopped/exited: ${stopped.map(c => `${c.name.replace(/^\//, '')} [${c.state}]`).join(', ') || 'none'}
+- Images: ${state.images.length} (total size: ${formatBytes(imgSize)})
+- Volumes: ${state.volumes.length}
+- Networks: ${state.networks.length}
+
+Answer concisely and helpfully. Use markdown formatting. When suggesting commands, use code blocks. Be specific to the user's actual container data when relevant.`
   }
 
-  if (!state.aiOpen) return null
+  const send = async (text?: string) => {
+    const msg = (text ?? input).trim()
+    if (!msg || thinking) return
+    setInput('')
+    setStarted(true)
+
+    const userMsg: Message = { role: 'user', text: msg }
+    setMessages(prev => [...prev, userMsg])
+    setThinking(true)
+
+    try {
+      const history = [...messages, userMsg]
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: buildContext(),
+          messages: history.map(m => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          })),
+        }),
+      })
+
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      const aiText = data.content?.map((b: { type: string; text?: string }) => b.text ?? '').join('') ?? 'Sorry, I could not get a response.'
+
+      setMessages(prev => [...prev, { role: 'ai', text: aiText }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'ai', text: 'Failed to reach OrcaHub AI. Please try again.' }])
+    } finally {
+      setThinking(false)
+    }
+  }
+
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+  }
 
   return (
-    <div
-      className={cn(
-        'w-[360px] flex-shrink-0 border-l border-[var(--border)]',
-        'bg-[var(--bg-void)] flex flex-col animate-slide-in',
-      )}
-    >
+    <div className={cn(
+      'fixed right-0 top-[58px] h-[calc(100vh-58px)] z-[300] flex flex-col',
+      'bg-[var(--bg-surface)] border-l border-[var(--border)]',
+      'transition-all duration-[320ms] ease-[cubic-bezier(0.4,0,0.2,1)]',
+      state.aiOpen ? 'w-[380px] opacity-100' : 'w-0 opacity-0 pointer-events-none',
+    )}>
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)]">
-        <div className="w-8 h-8 rounded-[9px] bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(124,58,237,0.15)] border border-[rgba(0,212,255,0.2)] flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-[#00d4ff]" />
-        </div>
-        <div>
-          <div className="text-[13px] font-bold text-[var(--text-primary)]">OrcaHub AI</div>
-          <div className="text-[10.5px] text-[var(--text-muted)]">Infrastructure assistant</div>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-[8px] bg-gradient-to-br from-[rgba(0,212,255,0.2)] to-[rgba(124,58,237,0.2)] border border-[rgba(0,212,255,0.3)] flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-[#00d4ff]" />
+          </div>
+          <div>
+            <div className="text-[13px] font-bold">OrcaHub AI</div>
+            <div className="text-[10.5px] text-[var(--text-muted)]">Powered by Claude</div>
+          </div>
         </div>
         <button
           onClick={() => dispatch({ type: 'TOGGLE_AI' })}
-          className="ml-auto text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+          className="w-[28px] h-[28px] flex items-center justify-center rounded-[7px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-glass-hover)] transition-all"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {!started && (
-          <div>
-            <div className="text-center py-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(124,58,237,0.15)] border border-[rgba(0,212,255,0.2)] flex items-center justify-center mx-auto mb-3">
-                <Sparkles className="w-5 h-5 text-[#00d4ff]" />
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {!started ? (
+          <div className="space-y-4">
+            <div className="text-center py-4">
+              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(124,58,237,0.15)] border border-[rgba(0,212,255,0.2)] flex items-center justify-center mb-3">
+                <Sparkles className="w-6 h-6 text-[#00d4ff]" />
               </div>
-              <p className="text-[12.5px] text-[var(--text-secondary)] leading-relaxed max-w-[220px] mx-auto">
-                Ask me anything about your infrastructure.
-              </p>
+              <div className="text-[14px] font-semibold mb-1">Ask me anything</div>
+              <div className="text-[12px] text-[var(--text-muted)] leading-relaxed">
+                I have full context of your {state.containers.length} containers, {state.images.length} images, and {state.volumes.length} volumes.
+              </div>
             </div>
-
-            <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[var(--text-muted)] mb-2">Suggestions</div>
-            <div className="flex flex-col gap-2">
+            <div className="space-y-2">
               {SUGGESTIONS.map(s => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="text-left text-[12px] text-[var(--text-secondary)] px-3 py-2.5 rounded-[9px] bg-[var(--bg-glass)] border border-[var(--border)] hover:bg-[var(--bg-glass-hover)] hover:border-[var(--border-bright)] hover:text-[var(--text-primary)] transition-all"
-                >
+                <button key={s} onClick={() => send(s)}
+                  className="w-full text-left text-[12.5px] px-3 py-2.5 rounded-[10px] bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-bright)] hover:text-[var(--text-primary)] transition-all">
                   {s}
                 </button>
               ))}
             </div>
           </div>
+        ) : (
+          messages.map((m, i) => (
+            <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+              {m.role === 'ai' && (
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[rgba(0,212,255,0.2)] to-[rgba(124,58,237,0.2)] border border-[rgba(0,212,255,0.25)] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                  <Sparkles className="w-3 h-3 text-[#00d4ff]" />
+                </div>
+              )}
+              <div className={cn(
+                'max-w-[85%] px-3.5 py-2.5 rounded-[13px] text-[12.5px] leading-relaxed',
+                m.role === 'user'
+                  ? 'bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)] text-[var(--text-primary)]'
+                  : 'bg-[var(--bg-raised)] border border-[var(--border)] text-[var(--text-secondary)]',
+              )}>
+                <AIMessage text={m.text} />
+              </div>
+            </div>
+          ))
         )}
 
-        {messages.map((m, i) => (
-          <ChatMessage key={i} message={m} />
-        ))}
-
-        {typing && (
-          <div className="flex items-start gap-3">
-            <div className="w-7 h-7 rounded-[7px] bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(124,58,237,0.15)] border border-[rgba(0,212,255,0.2)] flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-[#00d4ff]">
-              AI
+        {thinking && (
+          <div className="flex items-start gap-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[rgba(0,212,255,0.2)] to-[rgba(124,58,237,0.2)] border border-[rgba(0,212,255,0.25)] flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-3 h-3 text-[#00d4ff]" />
             </div>
-            <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[9px] px-3 py-2.5 flex items-center gap-1">
-              {[0,1,2].map(i => (
-                <span
-                  key={i}
-                  className="w-1.5 h-1.5 rounded-full bg-[#00d4ff] animate-pdot"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                />
+            <div className="bg-[var(--bg-raised)] border border-[var(--border)] rounded-[13px] px-3.5 py-3 flex gap-1.5 items-center">
+              {[0, 150, 300].map(d => (
+                <span key={d} className="w-1.5 h-1.5 rounded-full bg-[#00d4ff] animate-bounce"
+                  style={{ animationDelay: `${d}ms` }} />
               ))}
             </div>
           </div>
@@ -134,76 +181,87 @@ export function AIPanel() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-[var(--border)] p-4">
-        <div className="flex items-end gap-2 bg-[var(--bg-surface)] border border-[var(--border)] rounded-[11px] px-3 py-2 transition-all focus-within:border-[var(--border-focus)] focus-within:shadow-[0_0_0_3px_var(--accent-glow)]">
+      <div className="px-4 pb-4 flex-shrink-0">
+        <div className="flex items-end gap-2 bg-[var(--bg-glass)] border border-[var(--border)] rounded-[13px] px-3 py-2.5 focus-within:border-[var(--border-focus)] focus-within:shadow-[0_0_0_3px_var(--accent-glow)] transition-all">
           <textarea
+            ref={inputRef}
+            rows={1}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder="Ask about your infrastructure…"
-            rows={1}
-            className="flex-1 bg-transparent outline-none text-[12.5px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none min-h-[20px] max-h-[80px]"
+            onKeyDown={handleKey}
+            placeholder="Ask about your containers…"
+            className="flex-1 bg-transparent border-none outline-none resize-none text-[12.5px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] max-h-24 overflow-auto"
           />
           <button
             onClick={() => send()}
-            disabled={!input.trim() || typing}
-            className="text-[#00d4ff] hover:text-[var(--text-primary)] transition-colors disabled:opacity-30"
+            disabled={!input.trim() || thinking}
+            className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-[rgba(0,212,255,0.15)] border border-[rgba(0,212,255,0.3)] text-[#00d4ff] disabled:opacity-30 hover:bg-[rgba(0,212,255,0.25)] transition-all flex-shrink-0"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </div>
-        <p className="text-[10px] text-[var(--text-muted)] mt-2 text-center">Enter to send · Shift+Enter for newline</p>
+        <div className="text-[10px] text-[var(--text-muted)] text-center mt-2">Enter to send · Shift+Enter for newline</div>
       </div>
     </div>
   )
 }
 
-function ChatMessage({ message }: { message: Message }) {
-  const isUser = message.role === 'user'
+// Simple markdown renderer for AI responses
+function AIMessage({ text }: { text: string }) {
+  const lines = text.split('\n')
+  const result: React.ReactNode[] = []
+  let inCode = false
+  let codeLines: string[] = []
+  let codeLang = ''
 
-  // Render markdown-lite
-  const renderText = (text: string) => {
-    return text.split('\n').map((line, i) => {
-      // Code block
-      if (line.startsWith('`') && line.endsWith('`')) {
-        return (
-          <div key={i} className="my-1 px-2 py-1 rounded bg-[rgba(0,0,0,0.35)] font-mono text-[11px] text-[#00d4ff]">
-            {line.slice(1, -1)}
-          </div>
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (line.startsWith('```')) {
+      if (inCode) {
+        result.push(
+          <pre key={i} className="my-2 p-2.5 bg-[var(--bg-void)] border border-[var(--border)] rounded-[8px] overflow-x-auto text-[11px] font-mono text-[#10d98a]">
+            {codeLines.join('\n')}
+          </pre>
         )
+        inCode = false; codeLines = []; codeLang = ''
+      } else {
+        inCode = true; codeLang = line.slice(3)
       }
-      // Bold
-      const parts = line.split(/\*\*(.*?)\*\*/g)
-      return (
-        <span key={i} className="block">
-          {parts.map((p, j) => j % 2 === 1 ? <strong key={j}>{p}</strong> : p)}
-        </span>
+    } else if (inCode) {
+      codeLines.push(line)
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      result.push(<div key={i} className="font-semibold text-[var(--text-primary)]">{line.slice(2, -2)}</div>)
+    } else if (line.startsWith('- ') || line.startsWith('• ')) {
+      result.push(
+        <div key={i} className="flex gap-1.5 text-[12px]">
+          <span className="text-[#00d4ff] flex-shrink-0 mt-0.5">·</span>
+          <span>{renderInline(line.slice(2))}</span>
+        </div>
       )
-    })
+    } else if (/^\d+\./.test(line)) {
+      result.push(
+        <div key={i} className="flex gap-1.5 text-[12px]">
+          <span className="text-[var(--text-muted)] flex-shrink-0 w-5">{line.match(/^\d+/)?.[0]}.</span>
+          <span>{renderInline(line.replace(/^\d+\.\s*/, ''))}</span>
+        </div>
+      )
+    } else if (line === '') {
+      result.push(<div key={i} className="h-1.5" />)
+    } else {
+      result.push(<div key={i} className="text-[12.5px]">{renderInline(line)}</div>)
+    }
   }
 
-  return (
-    <div className={cn('flex items-start gap-3', isUser && 'flex-row-reverse')}>
-      <div
-        className={cn(
-          'w-7 h-7 rounded-[7px] flex-shrink-0 flex items-center justify-center text-[10px] font-bold',
-          isUser
-            ? 'bg-gradient-to-br from-[#00d4ff] to-[#7c3aed] text-white'
-            : 'bg-gradient-to-br from-[rgba(0,212,255,0.15)] to-[rgba(124,58,237,0.15)] border border-[rgba(0,212,255,0.2)] text-[#00d4ff]',
-        )}
-      >
-        {isUser ? 'U' : 'AI'}
-      </div>
-      <div
-        className={cn(
-          'max-w-[240px] rounded-[9px] px-3 py-2.5 text-[12px] leading-relaxed',
-          isUser
-            ? 'bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.2)] text-[var(--text-primary)]'
-            : 'bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-secondary)]',
-        )}
-      >
-        {renderText(message.text)}
-      </div>
-    </div>
-  )
+  return <div className="space-y-0.5">{result}</div>
+}
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/)
+  return parts.map((p, i) => {
+    if (p.startsWith('`') && p.endsWith('`'))
+      return <code key={i} className="px-1 py-0.5 bg-[var(--bg-void)] border border-[var(--border)] rounded text-[10.5px] font-mono text-[#10d98a]">{p.slice(1, -1)}</code>
+    if (p.startsWith('**') && p.endsWith('**'))
+      return <strong key={i} className="font-semibold text-[var(--text-primary)]">{p.slice(2, -2)}</strong>
+    return p
+  })
 }
