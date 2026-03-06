@@ -82,10 +82,10 @@ export function AIPanel() {
       </div>
       <div className="px-4 pb-4 flex-shrink-0">
         <div className="flex items-end gap-2 bg-[var(--bg-glass)] border border-[var(--border)] rounded-[13px] px-3 py-2.5 focus-within:border-[var(--border-focus)] focus-within:shadow-[0_0_0_3px_var(--accent-glow)] transition-all">
-          <textarea ref={inputRef} rows={1} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Ask about your containers\u2026" className="flex-1 bg-transparent border-none outline-none resize-none text-[12.5px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] max-h-24 overflow-auto" />
+          <textarea ref={inputRef} rows={1} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey} placeholder="Ask about your containers…" className="flex-1 bg-transparent border-none outline-none resize-none text-[12.5px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] max-h-24 overflow-auto" />
           <button onClick={() => send()} disabled={!input.trim() || thinking} className="w-7 h-7 flex items-center justify-center rounded-[8px] bg-[rgba(0,212,255,0.15)] border border-[rgba(0,212,255,0.3)] text-[#00d4ff] disabled:opacity-30 hover:bg-[rgba(0,212,255,0.25)] transition-all flex-shrink-0"><Send className="w-3.5 h-3.5" /></button>
         </div>
-        <div className="text-[10px] text-[var(--text-muted)] text-center mt-2">Enter to send "\u00b7" Shift+Enter for newline</div>
+        <div className="text-[10px] text-[var(--text-muted)] text-center mt-2">Enter to send · Shift+Enter for newline</div>
       </div>
     </div>
   )
