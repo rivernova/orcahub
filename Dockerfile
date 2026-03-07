@@ -1,6 +1,6 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/web/frontend
-COPY web/frontend/package.json web/frontend/pnpm-lock.yaml ./
+COPY web/package.json web/pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY web/frontend/ .
 RUN pnpm build
@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . .
 
-COPY --from=frontend-builder /app/web/frontend/dist ./web/frontend/dist
+COPY --from=frontend-builder /app/web/dist ./web/dist
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -ldflags="-s -w" \
