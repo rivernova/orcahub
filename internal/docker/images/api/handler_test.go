@@ -53,15 +53,25 @@ func (m *mockImageService) Prune(ctx context.Context) (model.PruneResult, error)
 	args := m.Called(ctx)
 	return args.Get(0).(model.PruneResult), args.Error(1)
 }
+func (m *mockImageService) Tag(ctx context.Context, opts model.TagOptions) error {
+	return m.Called(ctx, opts).Error(0)
+}
+
+func (m *mockImageService) History(ctx context.Context, id string) ([]model.HistoryEntry, error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).([]model.HistoryEntry), args.Error(1)
+}
 
 func setupImageRouter(svc *mockImageService) *gin.Engine {
 	r := gin.New()
 	h := imageapi.NewHandler(svc)
 	r.GET("/images", h.List)
 	r.GET("/images/:id", h.Inspect)
+	r.GET("/images/:id/history", h.History)
 	r.DELETE("/images/:id", h.Delete)
 	r.POST("/images/pull", h.Pull)
 	r.POST("/images/build", h.Build)
+	r.POST("/images/tag", h.Tag)
 	r.POST("/images/prune", h.Prune)
 	return r
 }

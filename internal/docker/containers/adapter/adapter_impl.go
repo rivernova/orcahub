@@ -9,10 +9,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/docker/docker/api/pkg/stdcopy"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 	model "github.com/rivernova/orcahub/internal/docker/containers/model"
 )

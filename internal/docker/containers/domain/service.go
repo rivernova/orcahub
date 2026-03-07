@@ -23,5 +23,4 @@ type ContainerService interface {
 	Rename(ctx context.Context, id string, name string) error
 	Kill(ctx context.Context, id string, signal string) error
 	Top(ctx context.Context, id string) (*model.TopResult, error)
-	History(ctx context.Context, id string) ([]model.HistoryEntry, error)
 }

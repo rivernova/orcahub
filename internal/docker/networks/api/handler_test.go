@@ -48,6 +48,11 @@ func (m *mockNetworkService) Disconnect(ctx context.Context, networkID string, o
 	return m.Called(ctx, networkID, opts).Error(0)
 }
 
+func (m *mockNetworkService) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func setupNetworkRouter(svc *mockNetworkService) *gin.Engine {
 	r := gin.New()
 	h := networkapi.NewHandler(svc)
@@ -57,6 +62,7 @@ func setupNetworkRouter(svc *mockNetworkService) *gin.Engine {
 	r.DELETE("/networks/:id", h.Delete)
 	r.POST("/networks/:id/connect", h.Connect)
 	r.POST("/networks/:id/disconnect", h.Disconnect)
+	r.POST("/networks/prune", h.Prune)
 	return r
 }
 

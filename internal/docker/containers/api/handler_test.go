@@ -70,10 +70,28 @@ func (m *mockService) Exec(ctx context.Context, id string, opts model.ExecOption
 	}
 	return args.Get(0).(*model.ExecResult), args.Error(1)
 }
-
 func (m *mockService) Prune(ctx context.Context) (model.PruneResult, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+func (m *mockService) Pause(ctx context.Context, id string) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockService) Unpause(ctx context.Context, id string) error {
+	return m.Called(ctx, id).Error(0)
+}
+func (m *mockService) Rename(ctx context.Context, id string, name string) error {
+	return m.Called(ctx, id, name).Error(0)
+}
+func (m *mockService) Kill(ctx context.Context, id string, signal string) error {
+	return m.Called(ctx, id, signal).Error(0)
+}
+func (m *mockService) Top(ctx context.Context, id string) (*model.TopResult, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.TopResult), args.Error(1)
 }
 
 func setupRouter(svc *mockService) *gin.Engine {

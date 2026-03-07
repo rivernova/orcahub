@@ -41,6 +41,11 @@ func (m *mockNetworkAdapter) Disconnect(ctx context.Context, networkID string, o
 	return m.Called(ctx, networkID, opts).Error(0)
 }
 
+func (m *mockNetworkAdapter) Prune(ctx context.Context) (model.PruneResult, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(model.PruneResult), args.Error(1)
+}
+
 func TestNetworkService_List(t *testing.T) {
 	a := &mockNetworkAdapter{}
 	svc := domain.NewNetworkServiceImpl(a)
@@ -144,4 +149,15 @@ func TestNetworkService_Disconnect(t *testing.T) {
 	a.On("Disconnect", ctx, "net1", opts).Return(nil)
 
 	assert.NoError(t, svc.Disconnect(ctx, "net1", opts))
+}
+
+func TestNetworkService_Prune(t *testing.T) {
+	a := &mockNetworkAdapter{}
+	svc := domain.NewNetworkServiceImpl(a)
+	ctx := context.Background()
+	expected := model.PruneResult{Deleted: []string{"net1", "net2"}}
+	a.On("Prune", ctx).Return(expected, nil)
+	result, err := svc.Prune(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }
