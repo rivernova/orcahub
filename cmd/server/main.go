@@ -92,5 +92,5 @@ func getPort() string {
 	if port := os.Getenv("ORCAHUB_PORT"); port != "" {
 		return port
 	}
-	return "9876"
+	return "3001"
 }

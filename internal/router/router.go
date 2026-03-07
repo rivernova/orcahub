@@ -35,7 +35,7 @@ func SetupRouter(handlers *Handlers) *gin.Engine {
 	// CORS for dev
 	r.Use(middleware.CORSMiddleware())
 
-	api := r.Group("/api")
+	api := r.Group("/api/v1")
 	{
 		systemrouter.Register(api.Group("/system"), handlers.System)
 
