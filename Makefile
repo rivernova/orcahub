@@ -2,7 +2,7 @@
 
 # Dev
 dev:
-	@echo "→ Starting Go backend on :9876"
+	@echo "→ Starting Go backend on :3001"
 	go run ./cmd/server &
 	@echo "→ Starting Vite dev server on :3000"
 	cd web && pnpm dev
