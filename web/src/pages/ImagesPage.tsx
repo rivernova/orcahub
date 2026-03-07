@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input, Label } from '@/components/ui/form'
 import { api } from '@/api/client'
 import { formatBytes, shortId, formatUptime } from '@/lib/utils'
-import { Download, Trash2, Trash } from 'lucide-react'
+import { Download, Trash2, Trash, Loader2 } from 'lucide-react'
 
 export function ImagesPage() {
   const { state, loadAll, toast } = useApp()
@@ -39,7 +39,12 @@ export function ImagesPage() {
       <Dialog open={pullOpen} onOpenChange={v => !v && setPullOpen(false)}><DialogContent><DialogHeader><DialogTitle>Pull Image</DialogTitle><DialogDescription>Enter a Docker image reference to pull from registry</DialogDescription></DialogHeader>
         <div className="space-y-4"><div><Label htmlFor="pullRef">Image reference</Label><Input id="pullRef" value={pullRef} onChange={e => setPullRef(e.target.value)} placeholder="nginx:latest, postgres:16, ubuntu:22.04" onKeyDown={e => e.key === 'Enter' && pullImage()} autoFocus /></div>
         <div className="flex gap-2 flex-wrap">{['nginx:latest','redis:alpine','postgres:16','node:20-alpine'].map(s => (<button key={s} onClick={() => setPullRef(s)} className="text-[11px] px-2.5 py-1 rounded-[6px] bg-[var(--bg-glass)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-bright)] transition-all">{s}</button>))}</div></div>
-        <DialogFooter><Button variant="ghost" onClick={() => setPullOpen(false)}>Cancel</Button><Button variant="primary" onClick={pullImage} disabled={!pullRef.trim() || pulling}>{pulling ? 'Pulling\u2026' : 'Pull'}</Button></DialogFooter></DialogContent></Dialog>
+        <DialogFooter><Button variant="ghost" onClick={() => setPullOpen(false)}>Cancel</Button><Button variant="primary" onClick={pullImage} disabled={!pullRef.trim() || pulling}>
+  {pulling
+    ? <><Loader2 className="w-3 h-3 animate-spin" /> Pulling…</>
+    : 'Pull'
+  }
+</Button></DialogFooter></DialogContent></Dialog>
     </div>
   )
 }
