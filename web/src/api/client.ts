@@ -60,7 +60,7 @@ export const networks = {
 
 export const system = {
   detect: () => req<{ docker: boolean; k8s: boolean; k8s_version?: string }>('GET', '/system/detect'),
-  prune:  () => req<{ reclaimed: number; containers_deleted: string[]; images_deleted: number; volumes_deleted: string[]; networks_deleted: string[] }>('POST', '/docker/system/prune'),
+  prune:  () => req<{ reclaimed: number; containers_deleted: string[]; images_deleted: number; volumes_deleted: string[]; networks_deleted: string[] }>('POST', '/system/prune'),
 }
 
 export const api = { containers, images, volumes, networks, system }
