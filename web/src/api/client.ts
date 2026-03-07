@@ -39,7 +39,7 @@ export const containers = {
 
 export const images = {
   list:   ()            => req<DockerImage[]>('GET', '/docker/images'),
-  pull:   (ref: string) => req<void>('POST', '/docker/images/pull', { ref }),
+  pull: (ref: string) => req<void>('POST', '/docker/images/pull', { image: ref }),
   delete: (id: string)  => req<void>('DELETE', `/docker/images/${id}`),
   prune:  ()            => req<{ reclaimed: number }>('POST', '/docker/images/prune'),
 }
@@ -59,7 +59,7 @@ export const networks = {
 }
 
 export const system = {
-  detect: () => req<{ docker: boolean; k8s: boolean; k8s_version?: string }>('GET', '/docker/system/detect'),
+  detect: () => req<{ docker: boolean; k8s: boolean; k8s_version?: string }>('GET', '/system/detect'),
   prune:  () => req<{ reclaimed: number; containers_deleted: string[]; images_deleted: number; volumes_deleted: string[]; networks_deleted: string[] }>('POST', '/docker/system/prune'),
 }
 
