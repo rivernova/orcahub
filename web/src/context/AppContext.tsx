@@ -14,6 +14,7 @@ const initialState: AppState = {
   volumes:      [],
   networks:     [],
   loading:      false,
+   initialLoad: true,
   error:        null,
 }
 
@@ -31,6 +32,7 @@ function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_NETWORKS':   return { ...state, networks: action.payload }
     case 'SET_LOADING':    return { ...state, loading: action.payload }
     case 'SET_ERROR':      return { ...state, error: action.payload }
+    case 'SET_INITIAL_LOAD': return { ...state, initialLoad: action.payload }
     default:               return state
   }
 }
@@ -93,6 +95,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     else           dispatch({ type: 'SET_ERROR', payload: null })
 
     dispatch({ type: 'SET_LOADING', payload: false })
+    dispatch({ type: 'SET_INITIAL_LOAD', payload: false })
   }, [])
 
   useEffect(() => {

@@ -62,7 +62,7 @@ export interface ContainerStats {
 
 export interface DockerImage {
   id:           string
-  repo_tags:    string[]
+  tags:         string[]
   repo_digests: string[]
   size:         number
   virtual_size: number
@@ -148,6 +148,7 @@ export interface AppState {
   volumes:      Volume[]
   networks:     Network[]
   loading:      boolean
+  initialLoad:  boolean
   error:        string | null
 }
 
@@ -164,3 +165,4 @@ export type AppAction =
   | { type: "SET_NETWORKS";   payload: Network[] }
   | { type: "SET_LOADING";    payload: boolean }
   | { type: "SET_ERROR";      payload: string | null }
+  | { type: "SET_INITIAL_LOAD"; payload: boolean }

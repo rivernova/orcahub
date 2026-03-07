@@ -34,7 +34,7 @@ export function OverviewPage() {
         <StatCard label="Volumes" value={state.volumes.length} sub={`${state.networks.length} networks`} />
       </div>
       <SectionHeader title="Containers" count={filtered.length} right={<Tabs value={filter} onValueChange={v => setFilter(v as typeof filter)}><TabsList><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="running">Running</TabsTrigger><TabsTrigger value="stopped">Stopped</TabsTrigger></TabsList></Tabs>} />
-      {filtered.length === 0 && !state.loading ? (<Card><EmptyState icon="📦" title="No containers" description={filter !== 'all' ? `No ${filter} containers` : 'Deploy a container to get started'} action={{ label: '+ Deploy', onClick: () => setDeployOpen(true) }} /></Card>) : (<div className="grid gap-3">{filtered.map(c => <ContainerCard key={c.id} container={c} />)}</div>)}
+      {filtered.length === 0 && !state.initialLoad ? (<Card><EmptyState icon="📦" title="No containers" description={filter !== 'all' ? `No ${filter} containers` : 'Deploy a container to get started'} action={{ label: '+ Deploy', onClick: () => setDeployOpen(true) }} /></Card>) : (<div className="grid gap-3">{filtered.map(c => <ContainerCard key={c.id} container={c} />)}</div>)}
       <div className="mt-6 p-6 bg-[var(--bg-surface)] border border-[rgba(124,58,237,0.18)] rounded-[22px] flex items-center gap-[18px] relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[rgba(124,58,237,0.04)] to-transparent pointer-events-none" />
         <div className="w-12 h-12 rounded-[11px] bg-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.22)] flex items-center justify-center text-xl flex-shrink-0">⎈</div>
